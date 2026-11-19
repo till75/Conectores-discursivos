@@ -1,0 +1,706 @@
+unidad,macrofuncion,categoria,subcategoria,polifuncional
+a propósito,Conector,Adición,─,No
+a todo esto,Conector,Adición,─,No
+a su vez,Conector,Adición,─,No
+además,Conector,Adición,─,No
+al mismo tiempo,Conector,Adición,─,No
+aparte,Conector,Adición,─,No
+asimismo,Conector,Adición,─,No
+de igual forma,Conector,Adición,─,No
+de igual manera,Conector,Adición,─,No
+de igual modo,Conector,Adición,─,No
+de la misma forma,Conector,Adición,─,No
+de la misma manera,Conector,Adición,─,No
+de otra parte,Conector,Adición,─,Sí
+de otro lado,Conector,Adición,─,Sí
+de paso,Conector,Adición,─,No
+del mismo modo,Conector,Adición,─,No
+en otro orden de cosas,Conector,Adición,─,No
+encima,Conector,Adición,─,No
+es más,Conector,Adición,─,No
+igualmente 1,Conector,Adición,─,Sí
+inclusive 1,Conector,Adición,─,Sí
+incluso 2,Conector,Adición,─,Sí
+lo mismo 1,Conector,Adición,─,Sí
+más aún,Conector,Adición,─,No
+paralelamente,Conector,Adición,─,No
+por añadidura,Conector,Adición,─,No
+por cierto,Conector,Adición,─,No
+por lo demás 1,Conector,Adición,─,Sí
+por otra parte,Conector,Adición,─,No
+por otro lado,Conector,Adición,─,Sí
+por si fuera poco,Conector,Adición,─,No
+por su parte,Conector,Adición,─,No
+todavía más,Conector,Adición,─,No
+en conclusión,Conector,Conclusivo,─,No
+en definitiva 1,Conector,Conclusivo,─,Sí
+en resumidas cuentas,Conector,Conclusivo,─,No
+en suma,Conector,Conclusivo,─,No
+en tal caso,Conector,Conclusivo,─,No
+entonces 4,Conector,Conclusivo,─,Sí
+total 1,Conector,Conclusivo,─,Sí
+de lo contrario,Conector,Condicional,─,No
+de otra forma,Conector,Condicional,─,No
+de otra manera,Conector,Condicional,─,No
+de otro modo,Conector,Condicional,─,No
+así y todo,Conector,Concesivo,─,No
+aun así,Conector,Concesivo,─,No
+con todo,Conector,Concesivo,─,No
+de cualquier forma,Conector,Concesivo,─,No
+de cualquier manera,Conector,Concesivo,─,No
+de cualquier modo,Conector,Concesivo,─,No
+de todas formas,Conector,Concesivo,─,No
+de todas maneras,Conector,Concesivo,─,No
+de todos modos,Conector,Concesivo,─,No
+en cualquier caso,Conector,Concesivo,─,No
+en todo caso 1,Conector,Concesivo,─,Sí
+igual 2,Conector,Concesivo,─,Sí
+igualmente 2,Conector,Concesivo,─,Sí
+no obstante,Conector,Concesivo,─,No
+así 2,Conector,Consecutivo,─,Sí
+así pues,Conector,Consecutivo,─,No
+consecuentemente,Conector,Consecutivo,─,No
+consiguientemente,Conector,Consecutivo,─,No
+en consecuencia,Conector,Consecutivo,─,No
+entonces 2,Conector,Consecutivo,─,Sí
+por consiguiente,Conector,Consecutivo,─,No
+por ello,Conector,Consecutivo,─,No
+por ende,Conector,Consecutivo,─,No
+por eso,Conector,Consecutivo,─,No
+por lo tanto,Conector,Consecutivo,─,No
+pues 1,Conector,Consecutivo,─,Sí
+así,Conector,Ejemplificador,─,No
+pongamos 1,Conector,Ejemplificador,─,Sí
+pongamos por caso 1,Conector,Ejemplificador,─,Sí
+por ejemplo 1,Conector,Ejemplificador,─,Sí
+un ejemplo,Conector,Ejemplificador,─,No
+un poner 1,Conector,Ejemplificador,─,Sí
+a fin de cuentas,Conector,Justificativo,─,No
+en fin de cuentas,Conector,Justificativo,─,No
+al fin y a la postre,Conector,Justificativo,─,Sí
+al fin y al cabo 1,Conector,Justificativo,─,Sí
+con decirte,Conector,Justificativo,─,No
+de hecho 1,Conector,Justificativo,─,Sí
+después de todo,Conector,Justificativo,─,No
+es que 2,Conector,Justificativo,─,Sí
+no en vano,Conector,Justificativo,─,No
+total 2,Conector,Justificativo,─,Sí
+ahora bien,Conector,Oposición,─,No
+ahora,Conector,Oposición,─,No
+ahora que,Conector,Oposición,─,No
+bien al contrario,Conector,Oposición,─,No
+empero,Conector,Oposición,─,No
+en cambio,Conector,Oposición,─,No
+en todo caso 2,Conector,Oposición,─,Sí
+eso sí,Conector,Oposición,─,No
+muy al contrario,Conector,Oposición,─,No
+por el contrario 1,Conector,Oposición,─,Sí
+por contra,Conector,Oposición,─,No
+pues 4,Conector,Oposición,─,Sí
+sin embargo,Conector,Oposición,─,No
+sólo que,Conector,Oposición,─,No
+de entrada,Conector,Ordenador de la materia discursiva,De inicio,No
+nada 1,Conector,Ordenador de la materia discursiva,De inicio,Sí
+para comenzar,Conector,Ordenador de la materia discursiva,De inicio,No
+para empezar,Conector,Ordenador de la materia discursiva,De inicio,No
+a lo que iba,Conector,Ordenador de la materia discursiva,Continuativo,No
+a lo que voy,Conector,Ordenador de la materia discursiva,Continuativo,No
+a ver 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+bien 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+bueno 4,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+como digo,Conector,Ordenador de la materia discursiva,Continuativo,No
+como ya digo,Conector,Ordenador de la materia discursiva,Continuativo,No
+en ese sentido,Conector,Ordenador de la materia discursiva,Continuativo,No
+entonces 3,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+hombre 4,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+mientras tanto 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+nada 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+no sé 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+pues nada 1,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+pues 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+¿qué digo yo?,Conector,Ordenador de la materia discursiva,Continuativo,No
+qué sé yo 1,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+vamos a ver 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+ya digo,Conector,Ordenador de la materia discursiva,Continuativo,No
+ya te digo,Conector,Ordenador de la materia discursiva,Continuativo,No
+yo qué sé 2,Conector,Ordenador de la materia discursiva,Continuativo,Sí
+bien 3,Conector,Ordenador de la materia discursiva,Cierre,Sí
+bueno 2,Conector,Ordenador de la materia discursiva,Cierre,Sí
+cordialmente,Conector,Ordenador de la materia discursiva,Cierre,No
+cosas así,Conector,Ordenador de la materia discursiva,Cierre,No
+en fin 1,Conector,Ordenador de la materia discursiva,Cierre,Sí
+en resumen,Conector,Ordenador de la materia discursiva,Cierre,No
+en último lugar,Conector,Ordenador de la materia discursiva,Cierre,No
+etcétera,Conector,Ordenador de la materia discursiva,Cierre,No
+nada más 1,Conector,Ordenador de la materia discursiva,Cierre,Sí
+para terminar,Conector,Ordenador de la materia discursiva,Cierre,No
+por lo demás 2,Conector,Ordenador de la materia discursiva,Cierre,Sí
+por último 2,Conector,Ordenador de la materia discursiva,Cierre,Sí
+pues 6,Conector,Ordenador de la materia discursiva,Cierre,Sí
+pues nada 2,Conector,Ordenador de la materia discursiva,Cierre,Sí
+respetuosamente,Conector,Ordenador de la materia discursiva,Cierre,No
+resumiendo,Conector,Ordenador de la materia discursiva,Cierre,No
+y demás,Conector,Ordenador de la materia discursiva,Cierre,No
+y eso,Conector,Ordenador de la materia discursiva,Cierre,No
+y nada,Conector,Ordenador de la materia discursiva,Cierre,No
+y nada más,Conector,Ordenador de la materia discursiva,Cierre,No
+y para de contar,Conector,Ordenador de la materia discursiva,Cierre,No
+y punto,Conector,Ordenador de la materia discursiva,Cierre,No
+y todo eso,Conector,Ordenador de la materia discursiva,Cierre,No
+yo qué sé 3,Conector,Ordenador de la materia discursiva,Cierre,Sí
+de un lado,Conector,Ordenador de la materia discursiva,Enumerativo,No
+de otro,Conector,Ordenador de la materia discursiva,Enumerativo,No
+de otro lado,Conector,Ordenador de la materia discursiva,Enumerativo,Sí
+de una parte,Conector,Ordenador de la materia discursiva,Enumerativo,No
+de otra,Conector,Ordenador de la materia discursiva,Enumerativo,No
+de otra parte,Conector,Ordenador de la materia discursiva,Enumerativo,Sí
+en primer lugar,Conector,Ordenador de la materia discursiva,Enumerativo,No
+en segundo lugar,Conector,Ordenador de la materia discursiva,Enumerativo,No
+en tercer lugar,Conector,Ordenador de la materia discursiva,Enumerativo,No
+por otra,Conector,Ordenador de la materia discursiva,Enumerativo,No
+por otro,Conector,Ordenador de la materia discursiva,Enumerativo,No
+por otro lado,Conector,Ordenador de la materia discursiva,Enumerativo,Sí
+por un lado,Conector,Ordenador de la materia discursiva,Enumerativo,No
+por una parte,Conector,Ordenador de la materia discursiva,Enumerativo,No
+segundo,Conector,Ordenador de la materia discursiva,Enumerativo,No
+tercero,Conector,Ordenador de la materia discursiva,Enumerativo,No
+bien 1,Conector,Ordenador de la materia discursiva,Interactivo,Sí
+bueno 1,Conector,Ordenador de la materia discursiva,Interactivo,Sí
+chico,Conector,Ordenador de la materia discursiva,Interactivo,No
+chica,Conector,Ordenador de la materia discursiva,Interactivo,No
+¿comprende?,Conector,Ordenador de la materia discursiva,Interactivo,No
+¿comprendes?,Conector,Ordenador de la materia discursiva,Interactivo,No
+¿entiende?,Conector,Ordenador de la materia discursiva,Interactivo,No
+¿entiendes?,Conector,Ordenador de la materia discursiva,Interactivo,No
+hijo,Conector,Ordenador de la materia discursiva,Interactivo,No
+hija,Conector,Ordenador de la materia discursiva,Interactivo,No
+hombre 1,Conector,Ordenador de la materia discursiva,Interactivo,Sí
+mira,Conector,Ordenador de la materia discursiva,Interactivo,No
+mire,Conector,Ordenador de la materia discursiva,Interactivo,No
+mire usted,Conector,Ordenador de la materia discursiva,Interactivo,No
+mujer,Conector,Ordenador de la materia discursiva,Interactivo,No
+oye 1,Conector,Ordenador de la materia discursiva,Interactivo,Sí
+¿no?,Conector,Ordenador de la materia discursiva,Interactivo,No
+pues 3,Conector,Ordenador de la materia discursiva,Interactivo,Sí
+¿sabes?,Conector,Ordenador de la materia discursiva,Interactivo,No
+tío,Conector,Ordenador de la materia discursiva,Interactivo,No
+tía,Conector,Ordenador de la materia discursiva,Interactivo,No
+venga 2,Conector,Ordenador de la materia discursiva,Interactivo,Sí
+verá,Conector,Ordenador de la materia discursiva,Interactivo,No
+verás,Conector,Ordenador de la materia discursiva,Interactivo,No
+¿verdad?,Conector,Ordenador de la materia discursiva,Interactivo,No
+ya me entiendes,Conector,Ordenador de la materia discursiva,Interactivo,No
+ya ve,Conector,Ordenador de la materia discursiva,Interactivo,No
+ya ves,Conector,Ordenador de la materia discursiva,Interactivo,No
+al fin y al cabo 2,Conector,Recapitulativo,─,Sí
+pues bien,Conector,Recapitulativo,─,No
+antes bien,Conector,Reformulativo,Corrección,No
+bueno 3,Conector,Reformulativo,Corrección,Sí
+digo 1,Conector,Reformulativo,Corrección,Sí
+en fin 2,Conector,Reformulativo,Corrección,Sí
+más que 2,Conector,Reformulativo,Corrección,Sí
+mejor dicho,Conector,Reformulativo,Corrección,No
+perdón 2,Conector,Reformulativo,Corrección,Sí
+por mejor decir,Conector,Reformulativo,Corrección,No
+que diga,Conector,Reformulativo,Corrección,No
+¿qué digo?,Conector,Reformulativo,Corrección,No
+a saber 1,Conector,Reformulativo,Explicación,Sí
+dicho de otra forma,Conector,Reformulativo,Explicación,No
+dicho de otra manera,Conector,Reformulativo,Explicación,No
+dicho de otro modo,Conector,Reformulativo,Explicación,No
+en dos palabras,Conector,Reformulativo,Explicación,No
+en otras palabras,Conector,Reformulativo,Explicación,No
+en otros términos,Conector,Reformulativo,Explicación,No
+en pocas palabras 2,Conector,Reformulativo,Explicación,Sí
+en una palabra,Conector,Reformulativo,Explicación,No
+es a saber,Conector,Reformulativo,Explicación,No
+es decir,Conector,Reformulativo,Explicación,No
+esto es,Conector,Reformulativo,Explicación,No
+o lo que es lo mismo,Conector,Reformulativo,Explicación,No
+o sea,Conector,Reformulativo,Explicación,No
+respectivamente,Conector,Reformulativo,Explicación,No
+vamos a ver 3,Conector,Reformulativo,Explicación,Sí
+vamos 2,Conector,Reformulativo,Explicación,Sí
+vaya 2,Conector,Reformulativo,Explicación,Sí
+concretamente,Conector,Reformulativo,Concreción,No
+en concreto 1,Conector,Reformulativo,Concreción,Sí
+en particular 1,Conector,Reformulativo,Concreción,Sí
+específicamente,Conector,Reformulativo,Concreción,No
+particularmente 4,Conector,Reformulativo,Concreción,Sí
+sin ir más lejos 1,Conector,Reformulativo,Concreción,Sí
+verbigracia,Conector,Reformulativo,Concreción,No
+a continuación,Conector,Temporal,─,No
+apenas 2,Conector,Temporal,─,Sí
+después,Conector,Temporal,─,No
+en esto,Conector,Temporal,─,No
+entonces 1,Conector,Temporal,─,Sí
+entretanto,Conector,Temporal,─,No
+finalmente,Conector,Temporal,─,No
+luego,Conector,Temporal,─,No
+mientras,Conector,Temporal,─,No
+mientras tanto 1,Conector,Temporal,─,Sí
+nada más 2,Conector,Temporal,─,Sí
+nomás 2,Conector,Temporal,─,Sí
+por fin 1,Conector,Temporal,─,Sí
+por último 1,Conector,Temporal,─,Sí
+primero,Conector,Temporal,─,No
+a lo sumo,Operador,Argumentativo,─,No
+abrumadoramente,Operador,Argumentativo,─,No
+absolutamente 2,Operador,Argumentativo,─,Sí
+al contrario,Operador,Argumentativo,─,No
+al fin y al cabo 3,Operador,Argumentativo,─,Sí
+al menos,Operador,Argumentativo,─,No
+altamente,Operador,Argumentativo,─,No
+anda que,Operador,Argumentativo,─,No
+apenas 1,Operador,Argumentativo,─,Sí
+aproximadamente,Operador,Argumentativo,─,No
+aun,Operador,Argumentativo,─,No
+aún,Operador,Argumentativo,─,No
+bastante,Operador,Argumentativo,─,No
+bastantes,Operador,Argumentativo,─,No
+brutalmente,Operador,Argumentativo,─,No
+casi,Operador,Argumentativo,─,No
+como máximo,Operador,Argumentativo,─,No
+como mínimo,Operador,Argumentativo,─,No
+como mucho,Operador,Argumentativo,─,No
+como poco,Operador,Argumentativo,─,No
+completamente,Operador,Argumentativo,─,No
+considerablemente,Operador,Argumentativo,─,No
+cuando más,Operador,Argumentativo,─,No
+decididamente,Operador,Argumentativo,─,No
+del todo,Operador,Argumentativo,─,No
+demasiado,Operador,Argumentativo,─,No
+demasiada,Operador,Argumentativo,─,No
+diríamos más,Operador,Argumentativo,─,No
+eminentemente,Operador,Argumentativo,─,No
+en especial,Operador,Argumentativo,─,No
+en extremo,Operador,Argumentativo,─,No
+en gran medida,Operador,Argumentativo,─,No
+en parte,Operador,Argumentativo,─,No
+en particular 2,Operador,Argumentativo,─,Sí
+en principio,Operador,Argumentativo,─,No
+en último término,Operador,Argumentativo,─,No
+enormemente,Operador,Argumentativo,─,No
+enteramente,Operador,Argumentativo,─,No
+escasamente,Operador,Argumentativo,─,No
+escaso,Operador,Argumentativo,─,No
+escasa,Operador,Argumentativo,─,No
+esencialmente 1,Operador,Argumentativo,─,Sí
+esencialmente 2,Operador,Argumentativo,─,Sí
+espantosamente,Operador,Argumentativo,─,No
+especialmente,Operador,Argumentativo,─,No
+excesivamente,Operador,Argumentativo,─,No
+exclusivamente,Operador,Argumentativo,─,No
+extraordinariamente,Operador,Argumentativo,─,No
+extremadamente,Operador,Argumentativo,─,No
+francamente 2,Operador,Argumentativo,─,Sí
+fundamentalmente,Operador,Argumentativo,─,No
+harto,Operador,Argumentativo,─,No
+hasta,Operador,Argumentativo,─,No
+inclusive 2,Operador,Argumentativo,─,Sí
+incluso 1,Operador,Argumentativo,─,Sí
+incomparablemente,Operador,Argumentativo,─,No
+indeciblemente,Operador,Argumentativo,─,No
+más,Operador,Argumentativo,─,No
+más o menos,Operador,Argumentativo,─,No
+más que 1,Operador,Argumentativo,─,Sí
+más que nada,Operador,Argumentativo,─,No
+máxime,Operador,Argumentativo,─,No
+medio,Operador,Argumentativo,─,No
+menos,Operador,Argumentativo,─,No
+menudo,Operador,Argumentativo,─,No
+menuda,Operador,Argumentativo,─,No
+meramente,Operador,Argumentativo,─,No
+mero,Operador,Argumentativo,─,No
+mera,Operador,Argumentativo,─,No
+mínimamente,Operador,Argumentativo,─,No
+mínimo,Operador,Argumentativo,─,No
+mínima,Operador,Argumentativo,─,No
+mucho,Operador,Argumentativo,─,No
+mucha,Operador,Argumentativo,─,No
+muy,Operador,Argumentativo,─,No
+nada más,Operador,Argumentativo,─,No
+nada más que,Operador,Argumentativo,─,No
+nada más y nada menos,Operador,Argumentativo,─,No
+nada menos,Operador,Argumentativo,─,No
+nada menos que,Operador,Argumentativo,─,No
+nada menos y nada más,Operador,Argumentativo,─,No
+ni,Operador,Argumentativo,─,No
+ni más ni menos,Operador,Argumentativo,─,No
+ni más ni menos que,Operador,Argumentativo,─,No
+ni siquiera,Operador,Argumentativo,─,No
+no digamos,Operador,Argumentativo,─,No
+no sabes,Operador,Argumentativo,─,No
+nomás 1,Operador,Argumentativo,─,Sí
+notablemente,Operador,Argumentativo,─,No
+para colmo,Operador,Argumentativo,─,No
+particularmente 3,Operador,Argumentativo,─,Sí
+perfectamente 2,Operador,Argumentativo,─,Sí
+plenamente,Operador,Argumentativo,─,No
+poco más,Operador,Argumentativo,─,No
+poco,Operador,Argumentativo,─,No
+poca,Operador,Argumentativo,─,No
+por completo 1,Operador,Argumentativo,─,Sí
+por el contrario 2,Operador,Argumentativo,─,Sí
+por lo menos,Operador,Argumentativo,─,No
+preferentemente,Operador,Argumentativo,─,No
+preferiblemente,Operador,Argumentativo,─,No
+preponderantemente,Operador,Argumentativo,─,No
+primordialmente,Operador,Argumentativo,─,No
+principalmente 1,Operador,Argumentativo,─,Sí
+profundamente,Operador,Argumentativo,─,No
+qué sé yo 2,Operador,Argumentativo,─,Sí
+relativamente,Operador,Argumentativo,─,No
+sensiblemente,Operador,Argumentativo,─,No
+si acaso,Operador,Argumentativo,─,No
+siquiera,Operador,Argumentativo,─,No
+sobre todo,Operador,Argumentativo,─,No
+solamente,Operador,Argumentativo,─,No
+solo,Operador,Argumentativo,─,Sí
+suficiente,Operador,Argumentativo,─,No
+suficientes,Operador,Argumentativo,─,No
+suficientemente,Operador,Argumentativo,─,No
+sumamente,Operador,Argumentativo,─,No
+sustancialmente 1,Operador,Argumentativo,─,Sí
+también,Operador,Argumentativo,─,No
+tampoco,Operador,Argumentativo,─,No
+tan,Operador,Argumentativo,─,No
+tanto,Operador,Argumentativo,─,No
+tanta,Operador,Argumentativo,─,No
+terriblemente,Operador,Argumentativo,─,No
+todavía,Operador,Argumentativo,─,No
+todo lo contrario,Operador,Argumentativo,─,No
+todo lo más,Operador,Argumentativo,─,No
+totalmente 1,Operador,Argumentativo,─,Sí
+tremendamente,Operador,Argumentativo,─,No
+un poco,Operador,Argumentativo,─,No
+únicamente,Operador,Argumentativo,─,No
+vaya 1,Operador,Argumentativo,─,Sí
+a decir verdad,Operador,Enunciativo,─,No
+ante todo 2,Operador,Enunciativo,─,Sí
+antes que nada 2,Operador,Enunciativo,─,Sí
+brevemente,Operador,Enunciativo,─,No
+categóricamente,Operador,Enunciativo,─,No
+claramente,Operador,Enunciativo,─,No
+como aquel que dice,Operador,Enunciativo,─,No
+como digo yo,Operador,Enunciativo,─,No
+como quien dice,Operador,Enunciativo,─,No
+como se dice,Operador,Enunciativo,─,No
+como se diga,Operador,Enunciativo,─,No
+como si dijéramos,Operador,Enunciativo,─,No
+con franqueza,Operador,Enunciativo,─,No
+con perdón,Operador,Enunciativo,─,No
+con sinceridad,Operador,Enunciativo,─,No
+confidencialmente,Operador,Enunciativo,─,No
+de algún modo,Operador,Enunciativo,─,No
+de alguna forma,Operador,Enunciativo,─,No
+de alguna manera,Operador,Enunciativo,─,No
+de hombre a hombre,Operador,Enunciativo,─,No
+de mujer a mujer,Operador,Enunciativo,─,No
+de veras,Operador,Enunciativo,─,No
+de verdad,Operador,Enunciativo,─,No
+decididamente 2,Operador,Enunciativo,─,Sí
+definitivamente,Operador,Enunciativo,─,No
+dicho sea de paso,Operador,Enunciativo,─,No
+dicho sea entre paréntesis,Operador,Enunciativo,─,No
+digamos,Operador,Enunciativo,─,No
+digámoslo así,Operador,Enunciativo,─,No
+digo yo,Operador,Enunciativo,─,No
+digo 2,Operador,Enunciativo,─,Sí
+diría yo,Operador,Enunciativo,─,No
+diríamos,Operador,Enunciativo,─,No
+en cierta forma,Operador,Enunciativo,─,No
+en cierta manera,Operador,Enunciativo,─,No
+en cierta medida,Operador,Enunciativo,─,No
+en cierto modo,Operador,Enunciativo,─,No
+en cierto sentido,Operador,Enunciativo,─,No
+en concreto 2,Operador,Enunciativo,─,Sí
+en definitiva 2,Operador,Enunciativo,─,Sí
+en el fondo,Operador,Enunciativo,─,No
+en general,Operador,Enunciativo,─,No
+en honor a la verdad,Operador,Enunciativo,─,No
+en pocas palabras 1,Operador,Enunciativo,─,Sí
+en serio,Operador,Enunciativo,─,No
+entre comillas,Operador,Enunciativo,─,No
+entre nosotros,Operador,Enunciativo,─,No
+entre paréntesis,Operador,Enunciativo,─,No
+entre tú y yo,Operador,Enunciativo,─,No
+es un poner,Operador,Enunciativo,─,No
+es un decir,Operador,Enunciativo,─,No
+es un suponer,Operador,Enunciativo,─,No
+francamente 1,Operador,Enunciativo,─,Sí
+generalmente,Operador,Enunciativo,─,No
+grosso modo,Operador,Enunciativo,─,No
+hablando claramente,Operador,Enunciativo,─,No
+hablando con propiedad,Operador,Enunciativo,─,No
+hablando en plata,Operador,Enunciativo,─,No
+hasta cierto punto,Operador,Enunciativo,─,No
+honestamente,Operador,Enunciativo,─,No
+honradamente,Operador,Enunciativo,─,No
+la verdad,Operador,Enunciativo,─,No
+la verdad sea dicha,Operador,Enunciativo,─,No
+lisa y llanamente,Operador,Enunciativo,─,No
+llanamente,Operador,Enunciativo,─,No
+más bien,Operador,Enunciativo,─,No
+normalmente,Operador,Enunciativo,─,No
+personalmente,Operador,Enunciativo,─,No
+poco menos que,Operador,Enunciativo,─,No
+podríamos decir,Operador,Enunciativo,─,No
+pongamos,Operador,Enunciativo,─,No
+pongamos que,Operador,Enunciativo,─,No
+pongamos por caso 2,Operador,Enunciativo,─,Sí
+pongamos 2,Operador,Enunciativo,─,Sí
+por así decir,Operador,Enunciativo,─,No
+por así decirlo,Operador,Enunciativo,─,No
+por decirlo así,Operador,Enunciativo,─,No
+por ejemplo 2,Operador,Enunciativo,─,Sí
+por lo general,Operador,Enunciativo,─,No
+por lo visto,Operador,Enunciativo,─,No
+prácticamente,Operador,Enunciativo,─,No
+presumiblemente,Operador,Enunciativo,─,No
+presuntamente,Operador,Enunciativo,─,No
+pretendidamente,Operador,Enunciativo,─,No
+principalmente 2,Operador,Enunciativo,─,Sí
+propiamente,Operador,Enunciativo,─,No
+puramente,Operador,Enunciativo,─,No
+qué quiere que le diga,Operador,Enunciativo,─,No
+qué quieres que te diga,Operador,Enunciativo,─,No
+que se sepa,Operador,Enunciativo,─,No
+que sepamos,Operador,Enunciativo,─,No
+que yo sepa,Operador,Enunciativo,─,No
+resumidamente,Operador,Enunciativo,─,No
+se podría decir,Operador,Enunciativo,─,No
+sencillamente,Operador,Enunciativo,─,No
+sencillo,Operador,Enunciativo,─,No
+sencilla,Operador,Enunciativo,─,No
+simple,Operador,Enunciativo,─,No
+simples,Operador,Enunciativo,─,No
+simplemente,Operador,Enunciativo,─,No
+sin ir más lejos 2,Operador,Enunciativo,─,Sí
+sinceramente,Operador,Enunciativo,─,No
+sustancialmente 2,Operador,Enunciativo,─,Sí
+te lo digo yo,Operador,Enunciativo,─,No
+se lo digo yo,Operador,Enunciativo,─,No
+técnicamente,Operador,Enunciativo,─,No
+todo hay que decirlo,Operador,Enunciativo,─,No
+un poner 2,Operador,Enunciativo,─,Sí
+un suponer,Operador,Enunciativo,─,No
+vamos 1,Operador,Enunciativo,─,Sí
+ya es decir,Operador,Enunciativo,─,No
+ante todo 1,Operador,Informativo,─,Sí
+antes que nada 1,Operador,Informativo,─,Sí
+auténticamente,Operador,Informativo,─,No
+auténtico,Operador,Informativo,─,No
+auténtica,Operador,Informativo,─,No
+básicamente,Operador,Informativo,─,No
+como sabe,Operador,Informativo,─,No
+como sabes,Operador,Informativo,─,No
+es que 2,Operador,Informativo,─,Sí
+esencialmente 1,Operador,Informativo,─,Sí
+exactamente 2,Operador,Informativo,─,Sí
+hombre 5,Operador,Informativo,─,Sí
+justamente,Operador,Informativo,─,No
+justo,Operador,Informativo,─,No
+justa,Operador,Informativo,─,No
+lo que se dice,Operador,Informativo,─,No
+lo que se llama,Operador,Informativo,─,No
+lo que yo llamo,Operador,Informativo,─,No
+mismamente,Operador,Informativo,─,No
+nomás 3,Operador,Informativo,─,Sí
+particularmente 2,Operador,Informativo,─,Sí
+perfecto,Operador,Informativo,─,No
+perfecta,Operador,Informativo,─,No
+precisamente,Operador,Informativo,─,No
+preciso,Operador,Informativo,─,No
+precisa,Operador,Informativo,─,No
+propio,Operador,Informativo,─,No
+propia,Operador,Informativo,─,No
+pues 5,Operador,Informativo,─,Sí
+puro,Operador,Informativo,─,No
+pura,Operador,Informativo,─,No
+solo,Operador,Informativo,─,Sí
+sola,Operador,Informativo,─,No
+único,Operador,Informativo,─,No
+única,Operador,Informativo,─,No
+verdadero,Operador,Informativo,─,No
+verdadera,Operador,Informativo,─,No
+ya sabe,Operador,Informativo,─,No
+ya sabes,Operador,Informativo,─,No
+a buen seguro,Operador,Modal,─,No
+a lo mejor,Operador,Modal,─,No
+a lo peor,Operador,Modal,─,No
+a lo que parece,Operador,Modal,─,No
+a que,Operador,Modal,─,No
+a saber 2,Operador,Modal,─,Sí
+a ver 1,Operador,Modal,─,Sí
+absolutamente 1,Operador,Modal,─,Sí
+acaso 1,Operador,Modal,─,Sí
+acaso 2,Operador,Modal,─,Sí
+aceptablemente,Operador,Modal,─,No
+admirablemente,Operador,Modal,─,No
+afortunadamente,Operador,Modal,─,No
+al fin,Operador,Modal,─,No
+al parecer,Operador,Modal,─,No
+anda,Operador,Modal,─,No
+aparentemente,Operador,Modal,─,No
+asombrosamente,Operador,Modal,─,No
+bien 4,Operador,Modal,─,Sí
+bueno 5,Operador,Modal,─,Sí
+capaz que,Operador,Modal,─,No
+ciertamente,Operador,Modal,─,No
+claro,Operador,Modal,─,No
+claro está,Operador,Modal,─,No
+cómo no,Operador,Modal,─,No
+conforme,Operador,Modal,─,No
+cualquiera sabe,Operador,Modal,─,No
+curiosamente,Operador,Modal,─,No
+de acuerdo,Operador,Modal,─,No
+de hecho 2,Operador,Modal,─,Sí
+de ningún modo,Operador,Modal,─,No
+de ninguna forma,Operador,Modal,─,No
+de ninguna manera,Operador,Modal,─,No
+de seguro,Operador,Modal,─,No
+depende,Operador,Modal,─,No
+deplorablemente,Operador,Modal,─,No
+desde luego,Operador,Modal,─,No
+desgraciadamente,Operador,Modal,─,No
+dichoso,Operador,Modal,─,No
+dichosa,Operador,Modal,─,No
+difícilmente,Operador,Modal,─,No
+dios quiera,Operador,Modal,─,No
+disculpa,Operador,Modal,─,No
+disculpe,Operador,Modal,─,No
+efectivamente,Operador,Modal,─,No
+elemental,Operador,Modal,─,No
+en absoluto,Operador,Modal,─,No
+en efecto,Operador,Modal,─,No
+en realidad,Operador,Modal,─,No
+en teoría,Operador,Modal,─,No
+en última instancia,Operador,Modal,─,No
+en último caso,Operador,Modal,─,No
+en verdad,Operador,Modal,─,No
+eso,Operador,Modal,─,No
+eso es,Operador,Modal,─,No
+"eso, eso",Operador,Modal,─,No
+espléndidamente,Operador,Modal,─,No
+¿estamos?,Operador,Modal,─,No
+evidentemente,Operador,Modal,─,No
+exactamente 1,Operador,Modal,─,Sí
+exacto,Operador,Modal,─,No
+fabuloso,Operador,Modal,─,No
+fabulosamente,Operador,Modal,─,No
+fantásticamente,Operador,Modal,─,No
+fantástico,Operador,Modal,─,No
+figúrate,Operador,Modal,─,No
+fíjate,Operador,Modal,─,No
+fíjese,Operador,Modal,─,No
+fijo,Operador,Modal,─,No
+gracias a dios,Operador,Modal,─,No
+hombre 2,Operador,Modal,─,Sí
+hombre 3,Operador,Modal,─,Sí
+horriblemente,Operador,Modal,─,No
+horrorosamente,Operador,Modal,─,No
+igual 1,Operador,Modal,─,Sí
+imagínate,Operador,Modal,─,No
+indiscutiblemente,Operador,Modal,─,No
+indudablemente,Operador,Modal,─,No
+inexplicablemente,Operador,Modal,─,No
+lamentablemente,Operador,Modal,─,No
+lástima,Operador,Modal,─,No
+lo más mínimo,Operador,Modal,─,No
+en lo más mínimo,Operador,Modal,─,No
+lo mismo 2,Operador,Modal,─,Sí
+lógicamente,Operador,Modal,─,No
+lógico,Operador,Modal,─,No
+maldito,Operador,Modal,─,No
+maldita,Operador,Modal,─,No
+maravillosamente,Operador,Modal,─,No
+mejor,Operador,Modal,─,No
+menos mal,Operador,Modal,─,No
+miserablemente,Operador,Modal,─,No
+nada de eso,Operador,Modal,─,No
+natural,Operador,Modal,─,No
+naturalmente,Operador,Modal,─,No
+necesariamente,Operador,Modal,─,No
+ni hablar,Operador,Modal,─,No
+ni hablar del peluquín,Operador,Modal,─,No
+ni mucho menos,Operador,Modal,─,No
+ni na,Operador,Modal,─,No
+ni nada,Operador,Modal,─,No
+ni pensarlo,Operador,Modal,─,No
+ni por ésas,Operador,Modal,─,No
+ni que decir tiene,Operador,Modal,─,No
+ni soñarlo,Operador,Modal,─,No
+no,Operador,Modal,─,No
+no faltaba más,Operador,Modal,─,No
+no faltaría más,Operador,Modal,─,No
+no me digas,Operador,Modal,─,No
+no ni ná,Operador,Modal,─,No
+no quiera dios,Operador,Modal,─,No
+no sé 1,Operador,Modal,─,Sí
+obligatoriamente,Operador,Modal,─,No
+obviamente,Operador,Modal,─,No
+oiga,Operador,Modal,─,No
+ojalá,Operador,Modal,─,No
+oye 2,Operador,Modal,─,Sí
+para nada,Operador,Modal,─,No
+paradójicamente,Operador,Modal,─,No
+particularmente 1,Operador,Modal,─,Sí
+perdón 1,Operador,Modal,─,Sí
+perdona,Operador,Modal,─,No
+perdone,Operador,Modal,─,No
+perfectamente 1,Operador,Modal,─,Sí
+pobre,Operador,Modal,─,No
+pobres,Operador,Modal,─,No
+por completo 2,Operador,Modal,─,Sí
+por descontado,Operador,Modal,─,No
+por desgracia,Operador,Modal,─,No
+por favor,Operador,Modal,─,No
+por fin 2,Operador,Modal,─,Sí
+por fuerza,Operador,Modal,─,No
+por mí,Operador,Modal,─,No
+por si acaso,Operador,Modal,─,No
+por suerte,Operador,Modal,─,No
+por supuesto,Operador,Modal,─,No
+posiblemente,Operador,Modal,─,No
+previsiblemente,Operador,Modal,─,No
+probablemente,Operador,Modal,─,No
+puede que,Operador,Modal,─,No
+qué duda cabe,Operador,Modal,─,No
+qué sé yo 3,Operador,Modal,─,Sí
+¡qué va!,Operador,Modal,─,No
+quién sabe,Operador,Modal,─,No
+quiera dios,Operador,Modal,─,No
+quieras que no,Operador,Modal,─,No
+quizá,Operador,Modal,─,No
+quizás,Operador,Modal,─,No
+realmente,Operador,Modal,─,No
+ridículamente,Operador,Modal,─,No
+según,Operador,Modal,─,No
+seguramente,Operador,Modal,─,No
+seguro,Operador,Modal,─,No
+sensacionalmente,Operador,Modal,─,No
+sí,Operador,Modal,─,No
+significativamente,Operador,Modal,─,No
+sin duda,Operador,Modal,─,No
+sin duda alguna,Operador,Modal,─,No
+sin lugar a dudas,Operador,Modal,─,No
+sorprendentemente,Operador,Modal,─,No
+supuestamente,Operador,Modal,─,No
+tal vez,Operador,Modal,─,No
+teóricamente,Operador,Modal,─,No
+totalmente 2,Operador,Modal,─,Sí
+tristemente,Operador,Modal,─,No
+vale,Operador,Modal,─,No
+vamos a ver 1,Operador,Modal,─,Sí
+vaya usted a saber,Operador,Modal,─,No
+ve tú a saber,Operador,Modal,─,No
+vete tú a saber,Operador,Modal,─,No
+venga 1,Operador,Modal,─,Sí
+verdaderamente,Operador,Modal,─,No
+y que lo digas,Operador,Modal,─,No
+ya,Operador,Modal,─,No
+ya lo creo,Operador,Modal,─,No
+ya lo ve,Operador,Modal,─,No
+ya lo ves,Operador,Modal,─,No
+yo qué sé 1,Operador,Modal,─,Sí

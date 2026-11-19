@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.venv/
+
+# Test and lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local Repomix snapshots
+.repomix/
+
+# OS clutter
+Thumbs.db
+Desktop.ini
+
+# --- Data: YouTube comment text must never be committed (R5) ---
+# Local working data. Only data/README.md is versioned.
+data/*
+!data/README.md
+
+# Corpora and annotations that contain comment text or author_hash values.
+doc/comentarios_youtube.csv
+doc/comentarios_youtube_normalizados.csv
+doc/Corpus piloto youtube__anotado.xlsx
+doc/referencia_piloto.csv
+doc/resultados_hito2.zip
+
+# Generated artifacts that carry context windows or comment text.
+predicciones_test_con_ventana.csv
+*_con_contexto.csv
+*_con_ventana.csv
+
+# Model and Hugging Face caches
+.cache/
+*.pt
+*.safetensors

@@ -1,0 +1,16 @@
+# Frozen evaluation protocol (see docs/00-brief.md and the ADRs).
+# Change any of these only through an ADR: they decide what a result means and
+# whether runs are comparable.
+
+seeds = [0, 1, 2, 3, 4]
+# Fraction of threads held out as the test split. The pilot has 150 annotated
+# comments; 70/30 by thread is the pre-registered split.
+test_fraction = 0.3
+# R3: maximum abstention while choosing the margin by grouped CV in training.
+max_abstention = 0.2
+# Categories with fewer training examples are flagged "revisar categoría".
+min_examples = 5
+# Context window used for the embedding features (words on each side).
+window_words = 6
+embedding_model = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+output_dir = "docs/results"

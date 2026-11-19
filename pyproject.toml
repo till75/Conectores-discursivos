@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conectores-discursivos"
+version = "0.1.0"
+description = "Automatic annotation of discourse connectors and operators in Chilean Spanish YouTube comments."
+requires-python = ">=3.14"
+dependencies = [
+    "matplotlib>=3.9",
+    "numpy>=2",
+    "openpyxl>=3.1",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "scipy>=1.14",
+    "spacy>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.9",
+]
+embeddings = [
+    "sentence-transformers>=3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["slow: long-running integration or corpus test"]
+addopts = "-m 'not slow'"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+# doc/ is read-only source material (course notebooks and data), not our code.
+extend-exclude = ["doc", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
