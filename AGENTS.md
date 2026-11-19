@@ -31,6 +31,10 @@ sees a false alarm, but a missed connector silently leaves the corpus.
 - The embedding extra (`sentence-transformers`, model
   `paraphrase-multilingual-MiniLM-L12-v2`) is optional and only needed for the
   embedding features; the core environment works without it.
+- `doc/` is evidence: read it, do not edit it. The pilot notebook is the
+  reference implementation behind the published numbers, including its
+  mistakes; the repository's job is to make those numbers reproducible and
+  testable, not to tidy the notebook away.
 
 ## Commands
 
@@ -127,6 +131,10 @@ language of the team and the assignment. Domain labels (`CON:ADICIÓN`,
 
 ## Working agreement
 
+- **Onboarding is a slice.** A team member who joins mid-project starts with
+  `/onboard`, not with code. The shared vocabulary lives in
+  `docs/00-onboarding.md`; keep it current when a term changes, because every
+  later spec and report uses those words.
 - **One vertical slice per turn.** A slice includes its tests, implementation,
   docs, diagnostic report, and commits. Finish it, report, and stop; do not
   start the next slice unless asked.

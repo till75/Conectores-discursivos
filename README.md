@@ -3,8 +3,11 @@
 Anotación automática de conectores y operadores discursivos (Fuentes Rodríguez,
 2009) en comentarios de YouTube en español de Chile, para el Fondecyt 11260185.
 
-**Estado:** repositorio recién inicializado. Todavía no hay sistema: el siguiente
-paso es `/brainstorm` y `/grill` sobre el problema, no escribir código.
+**Estado:** el piloto está hecho y sus resultados existen, pero todavía no son
+reproducibles desde este repositorio: viven en el notebook de Colab dentro de
+`doc/`. El repositorio contiene el entorno, el flujo de trabajo y el andamiaje;
+el sistema todavía no. Se empieza por entender (`/onboard`) y reproducir, no por
+escribir un modelo nuevo.
 
 ## El problema
 
