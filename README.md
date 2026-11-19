@@ -103,8 +103,9 @@ las convenciones de diagramas.
 
 - `doc/Equipo11_Propuesta_v3_equipo.docx` — propuesta del proyecto (problema,
   requisitos, dataset, ruta del sistema, protocolo, riesgos y plan).
-- `doc/Guion – Presentacio'n intermedia – Equipo 11.pdf` — guion de la
-  presentación intermedia del 20 nov.
+- `doc/Guion · Presentación intermedia · Equipo 11.pdf` — guion de la
+  presentación intermedia del 20 nov (el nombre real usa un punto medio `·` y
+  una tilde combinada).
 - `doc/equipo11_B0_B1_M1_M2.ipynb` — notebook con B0, B1, M1, M2 y el detector
   exploratorio de construcciones semilibres.
 - `doc/normalizar_comentarios.ipynb` — normalización automática del corpus.
