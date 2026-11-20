@@ -113,6 +113,35 @@ def test_undetected_labels_boundaries():
     ]
 
 
+def test_undetected_labels_excludes_csl_by_position():
+    """The published CSL file marks a construction by start and end."""
+    reference = pd.DataFrame(
+        [
+            {
+                "comment_id": "c5",
+                "thread_id": "t5",
+                "text_normalized": "",
+                "anotacion": "[Dale::OP:MODAL]",
+            }
+        ]
+    )
+    listing = pd.DataFrame({"unidad": ["hasta"]})
+    csl = pd.DataFrame(
+        [
+            {
+                "comment_id": "c5",
+                "inicio": 0,
+                "fin": 22,
+                "regla_csl": "[Dale + SN]",
+            }
+        ]
+    )
+
+    result = undetected_labels(reference, listing, csl)
+
+    assert result.to_dict("records") == []
+
+
 def _bootstrap_fixture():
     """Twenty threads, alternating which system is right."""
     gold, pred_a, pred_b, threads = [], [], [], []

@@ -118,14 +118,31 @@ def undetected_labels(
     reference: pd.DataFrame, listing: pd.DataFrame, csl: pd.DataFrame
 ) -> pd.DataFrame:
     """Return the reference spans the listing never matches."""
-    csl_set = set(zip(csl["comment_id"], csl["unidad"], strict=True))
+    csl_units = set()
+    if "unidad" in csl.columns:
+        csl_units = set(zip(csl["comment_id"], csl["unidad"], strict=True))
+    csl_ranges = []
+    if {"inicio", "fin"} <= set(csl.columns):
+        csl_ranges = list(
+            zip(csl["comment_id"], csl["inicio"], csl["fin"], strict=True)
+        )
     pattern = _listing_pattern(listing)
     rows = []
     for row in reference.itertuples():
         plain, spans = _read_annotation(row.anotacion)
         if plain is None:
             continue
-        spans = [span for span in spans if (row.comment_id, span[2]) not in csl_set]
+        spans = [
+            span
+            for span in spans
+            if (row.comment_id, span[2]) not in csl_units
+            and not any(
+                comment_id == row.comment_id
+                and inicio <= span[0]
+                and span[1] <= fin
+                for comment_id, inicio, fin in csl_ranges
+            )
+        ]
         matches = [(match.start(), match.end()) for match in pattern.finditer(plain)]
         for start, end, unit, label in spans:
             if not any(
