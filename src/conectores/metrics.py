@@ -358,3 +358,22 @@ def count_undetected(
             for thread, count in seed_undetected.groupby("thread_id").size().items()
         }
     return totals, per_thread
+
+
+def traceability(predictions: pd.DataFrame) -> dict[str, int]:
+    """Return the v4 traceability counts from the published predictions."""
+    discourse = predictions[predictions["M2"] != NO]
+    list_fixed = discourse[discourse["origen_M2"] == "listado"]
+    model_chosen = discourse[discourse["origen_M2"] == "modelo"]
+    return {
+        "etiquetas_discursivas": len(discourse),
+        "fijadas_listado": len(list_fixed),
+        "fijadas_listado_correctas": int(
+            (list_fixed["oro"] == list_fixed["M2"]).sum()
+        ),
+        "elegidas_modelo": len(model_chosen),
+        "elegidas_modelo_correctas": int(
+            (model_chosen["oro"] == model_chosen["M2"]).sum()
+        ),
+        "revisar_categoria": int(discourse["revisar_categoria"].sum()),
+    }

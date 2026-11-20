@@ -12,6 +12,7 @@ from conectores.metrics import (
     replay_intervals,
     replay_systems,
     summary_systems,
+    traceability,
     undetected_labels,
 )
 
@@ -433,3 +434,40 @@ def test_count_undetected_uses_test_threads():
 
     assert totals == {0: 2, 1: 1}
     assert per_thread == {0: {"t1": 2}, 1: {"t3": 1}}
+
+
+def test_traceability_counts():
+    """Only M2 discourse predictions count; origin and correctness follow."""
+    predictions = pd.DataFrame(
+        [
+            {
+                "M2": "CON:ADICIÓN",
+                "oro": "CON:ADICIÓN",
+                "origen_M2": "listado",
+                "revisar_categoria": False,
+            },
+            {
+                "M2": "OP:MODAL",
+                "oro": "OP:MODAL",
+                "origen_M2": "modelo",
+                "revisar_categoria": True,
+            },
+            {
+                "M2": NO,
+                "oro": "CON:ADICIÓN",
+                "origen_M2": "modelo",
+                "revisar_categoria": False,
+            },
+        ]
+    )
+
+    counts = traceability(predictions)
+
+    assert counts == {
+        "etiquetas_discursivas": 2,
+        "fijadas_listado": 1,
+        "fijadas_listado_correctas": 1,
+        "elegidas_modelo": 1,
+        "elegidas_modelo_correctas": 1,
+        "revisar_categoria": 1,
+    }
