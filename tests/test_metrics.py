@@ -49,6 +49,17 @@ def test_compute_metrics_hand_checked():
     assert result.coverage == pytest.approx(1 / 3)
 
 
+def test_compute_metrics_no_positive():
+    """All-negative input returns zeros without dividing by zero."""
+    result = compute_metrics([NO, NO], [NO, NO], n_undetected=0)
+
+    assert result.f1_label == 0.0
+    assert result.f1_discourse == 0.0
+    assert result.f1_macro == 0.0
+    assert result.precision == 0.0
+    assert result.coverage == 0.0
+
+
 def test_undetected_labels_excludes_csl():
     """A matched span is not undetected; a CSL span is removed; a non-match is."""
     reference = pd.DataFrame(
@@ -719,8 +730,8 @@ def test_cli_help(capsys):
     assert "--check" in captured.out
 
 
-def test_cli_replay_check(tmp_path):
-    """The CLI reads the files, writes the tables and exits zero on a match."""
+def _write_cli_fixture(tmp_path):
+    """Write the synthetic replay inputs and published tables to ``tmp_path``."""
     fixture = _replay_fixture()
     base = replay(
         fixture["predictions"],
@@ -731,54 +742,91 @@ def test_cli_replay_check(tmp_path):
         fixture["hashes"],
         fixture["test_files"],
     )
-    predictions_path = tmp_path / "predictions.csv"
-    reference_path = tmp_path / "reference.csv"
-    listing_path = tmp_path / "listing.csv"
-    csl_path = tmp_path / "csl.csv"
-    fixture["predictions"].to_csv(predictions_path, index=False)
-    fixture["reference"].to_csv(reference_path, index=False)
-    fixture["listing"].to_csv(listing_path, index=False)
-    fixture["csl"].to_csv(csl_path, index=False)
-    published = tmp_path / "published"
-    published.mkdir()
-    base.systems.to_csv(published / "resultados_semillas.csv", index=False)
-    base.summary.to_csv(published / "resumen_sistemas.csv", index=False)
-    base.intervals.to_csv(published / "intervalos_confianza.csv", index=False)
-    hashes_path = tmp_path / "hashes.json"
-    hashes_path.write_text(json.dumps(fixture["hashes"]), encoding="utf-8")
-    test_ids = tmp_path / "test_ids"
-    test_ids.mkdir()
+    paths = {
+        "predictions": tmp_path / "predictions.csv",
+        "reference": tmp_path / "reference.csv",
+        "listing": tmp_path / "listing.csv",
+        "csl": tmp_path / "csl.csv",
+        "published": tmp_path / "published",
+        "hashes": tmp_path / "hashes.json",
+        "test_ids": tmp_path / "test_ids",
+        "output": tmp_path / "output",
+    }
+    fixture["predictions"].to_csv(paths["predictions"], index=False)
+    fixture["reference"].to_csv(paths["reference"], index=False)
+    fixture["listing"].to_csv(paths["listing"], index=False)
+    fixture["csl"].to_csv(paths["csl"], index=False)
+    paths["published"].mkdir()
+    base.systems.to_csv(paths["published"] / "resultados_semillas.csv", index=False)
+    base.summary.to_csv(paths["published"] / "resumen_sistemas.csv", index=False)
+    base.intervals.to_csv(paths["published"] / "intervalos_confianza.csv", index=False)
+    paths["hashes"].write_text(json.dumps(fixture["hashes"]), encoding="utf-8")
+    paths["test_ids"].mkdir()
     for seed, text in fixture["test_files"].items():
-        (test_ids / f"test_semilla{seed}.txt").write_bytes(text.encode("utf-8"))
-    output = tmp_path / "output"
+        (paths["test_ids"] / f"test_semilla{seed}.txt").write_bytes(
+            text.encode("utf-8")
+        )
+    return paths
 
-    code = main(
+
+def _run_cli(paths):
+    """Run the replay CLI against the synthetic fixture."""
+    return main(
         [
             "replay",
             "--predictions",
-            str(predictions_path),
+            str(paths["predictions"]),
             "--reference",
-            str(reference_path),
+            str(paths["reference"]),
             "--listing",
-            str(listing_path),
+            str(paths["listing"]),
             "--csl",
-            str(csl_path),
+            str(paths["csl"]),
             "--published",
-            str(published),
+            str(paths["published"]),
             "--hashes",
-            str(hashes_path),
+            str(paths["hashes"]),
             "--test-ids",
-            str(test_ids),
+            str(paths["test_ids"]),
             "--output",
-            str(output),
+            str(paths["output"]),
             "--check",
         ]
     )
 
+
+def test_cli_replay_check(tmp_path):
+    """The CLI reads the files, writes the tables and exits zero on a match."""
+    paths = _write_cli_fixture(tmp_path)
+
+    code = _run_cli(paths)
+
     assert code == 0
-    assert (output / "replay_systems.csv").exists()
-    assert (output / "replay_summary.csv").exists()
-    assert (output / "replay_intervals.csv").exists()
-    assert (output / "replay_diagnostics.csv").exists()
-    report = (output / "replay_report.md").read_text(encoding="utf-8")
+    assert (paths["output"] / "replay_systems.csv").exists()
+    assert (paths["output"] / "replay_summary.csv").exists()
+    assert (paths["output"] / "replay_intervals.csv").exists()
+    assert (paths["output"] / "replay_diagnostics.csv").exists()
+    report = (paths["output"] / "replay_report.md").read_text(encoding="utf-8")
     assert "Deviations: 0" in report
+
+
+def test_output_has_no_text(tmp_path):
+    """The replay output carries no comment text or author hashes."""
+    paths = _write_cli_fixture(tmp_path)
+
+    assert _run_cli(paths) == 0
+
+    forbidden = {"texto", "text", "author_hash", "anotacion", "comentario"}
+    for name in (
+        "replay_systems.csv",
+        "replay_summary.csv",
+        "replay_intervals.csv",
+        "replay_diagnostics.csv",
+    ):
+        frame = pd.read_csv(paths["output"] / name)
+        assert not forbidden & set(frame.columns)
+        assert "@" not in frame.to_csv(index=False)
+    report = (paths["output"] / "replay_report.md").read_text(encoding="utf-8")
+    for token in forbidden:
+        assert token not in report
+    assert "@" not in report
