@@ -4,7 +4,8 @@
 The pilot experiment exists only as a Colab notebook in `doc/`; this repository has
 the environment, workflow, and templates, but no system code. The hito 2 results and
 their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
-`doc/Justificación de parámetros y requisitos · Equipo 11.docx`.
+`doc/Justificación de parámetros y requisitos · Equipo 11.docx`. The onboarding slice
+(S0) is written and awaiting approval; no technical slice has started.
 
 ## Done since last handoff
 - `0b50b55` scaffold: `.venv` (Python 3.14), `pyproject.toml`, git,
@@ -19,15 +20,19 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
   19,741 versus 20,097 candidates and 284 versus 273 reference candidates.
 - `.venv` has numpy/pandas/scipy/scikit-learn/spaCy + `es_core_news_sm` +
   sentence-transformers (torch 2.15 CPU). `pytest` 1 passed, `ruff check .` clean.
+- S0 onboarding: `docs/00-onboarding.md` and
+  `docs/results/s0-onboarding-diagnostics.md`. The author demonstrated the three
+  understanding checks after two corrections. Pass.
 
 ## Next
-1. Run `/grill` on `doc/Equipo11_Propuesta_v4_hito2.docx` to write
-   `docs/00-brief.md`. R1–R7 are already fixed there; the grilling separates
-   decisions from assumptions, it does not re-invent them.
+1. Choose the next step: `/grill` on `doc/Equipo11_Propuesta_v4_hito2.docx` to
+   write `docs/00-brief.md`, or a technical slice (A metric replay, B candidate
+   replay, C baseline replay, D model replay, E embedding ablation, F M3 rules).
 2. Run `/plan`. Candidate slices: reproduce the published table; recompute the
    metrics from `predicciones_test.csv` with no model; the embedding ablation
    (team benchmark, 21 Nov); M3 rules (team plan, 25 Nov).
-3. Then `/learn` for slice A and `/spec` + `/spec-review` before any `/tdd`.
+3. Then `/learn` for the chosen slice and `/spec` + `/spec-review` before any
+   `/tdd`.
 
 Future work, not this slice: a local open LLM as a measured teacher with a
 frozen prompt and human adjudication. See
