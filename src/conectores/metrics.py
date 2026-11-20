@@ -337,20 +337,21 @@ def compare_tables(
 
 def count_undetected(
     undetected: pd.DataFrame,
-    predictions: pd.DataFrame,
+    reference: pd.DataFrame,
     test_ids: Mapping[int, Sequence[str]],
 ) -> tuple[dict[int, int], dict[int, dict[str, int]]]:
     """Return undetected totals and per-thread counts for each seed."""
+    comment_to_thread = dict(
+        zip(reference["comment_id"], reference["thread_id"], strict=True)
+    )
     totals: dict[int, int] = {}
     per_thread: dict[int, dict[str, int]] = {}
-    for seed in sorted(predictions["semilla"].unique()):
-        seed_predictions = predictions[predictions["semilla"] == seed]
-        test_comments = set(test_ids.get(int(seed), ()))
-        test_threads = set(
-            seed_predictions.loc[
-                seed_predictions["comment_id"].isin(test_comments), "thread_id"
-            ]
-        )
+    for seed, ids in test_ids.items():
+        test_threads = {
+            comment_to_thread[comment_id]
+            for comment_id in ids
+            if comment_id in comment_to_thread
+        }
         seed_undetected = undetected[undetected["thread_id"].isin(test_threads)]
         totals[int(seed)] = len(seed_undetected)
         per_thread[int(seed)] = {

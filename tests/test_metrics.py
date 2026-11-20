@@ -391,13 +391,17 @@ def test_compare_tables_detects_missing_row():
 
 
 def test_count_undetected_uses_test_threads():
-    """Only undetected labels in the seed's frozen test threads count."""
-    predictions = pd.DataFrame(
+    """Only undetected labels in the seed's frozen test threads count.
+
+    ``c2`` is in seed 0's test set but has no prediction row for seed 0, so
+    resolving test IDs through the predictions would miss its label. The
+    reference resolves every test comment to its thread.
+    """
+    reference = pd.DataFrame(
         [
-            {"semilla": 0, "comment_id": "c1", "thread_id": "t1"},
-            {"semilla": 0, "comment_id": "c1.r1", "thread_id": "t1"},
-            {"semilla": 0, "comment_id": "c2", "thread_id": "t2"},
-            {"semilla": 1, "comment_id": "c3", "thread_id": "t3"},
+            {"comment_id": "c1", "thread_id": "t1", "semilla": 0},
+            {"comment_id": "c2", "thread_id": "t2", "semilla": 1},
+            {"comment_id": "c3", "thread_id": "t3", "semilla": 1},
         ]
     )
     undetected = pd.DataFrame(
@@ -409,31 +413,25 @@ def test_count_undetected_uses_test_threads():
                 "oro": "CON:ADICIÓN",
             },
             {
-                "comment_id": "c1.r1",
-                "thread_id": "t1",
-                "unidad": "pues",
-                "oro": "CON:CONSECUENCIA",
-            },
-            {
                 "comment_id": "c2",
                 "thread_id": "t2",
                 "unidad": "igual",
-                "oro": "CON:ADICIÓN",
+                "oro": "CON:CONSECUTIVO",
             },
             {
                 "comment_id": "c3",
                 "thread_id": "t3",
-                "unidad": "solo",
-                "oro": "OP:MODAL",
+                "unidad": "pues",
+                "oro": "CON:CONSECUTIVO",
             },
         ]
     )
-    test_ids = {0: ["c1", "c1.r1"], 1: ["c3"]}
+    test_ids = {0: ["c1", "c2"], 1: ["c3"]}
 
-    totals, per_thread = count_undetected(undetected, predictions, test_ids)
+    totals, per_thread = count_undetected(undetected, reference, test_ids)
 
     assert totals == {0: 2, 1: 1}
-    assert per_thread == {0: {"t1": 2}, 1: {"t3": 1}}
+    assert per_thread == {0: {"t1": 1, "t2": 1}, 1: {"t3": 1}}
 
 
 def test_traceability_counts():
