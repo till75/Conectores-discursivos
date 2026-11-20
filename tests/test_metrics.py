@@ -8,6 +8,7 @@ from conectores.metrics import (
     bootstrap_difference,
     compute_metrics,
     replay_systems,
+    summary_systems,
     undetected_labels,
 )
 
@@ -198,3 +199,52 @@ def test_replay_systems_synthetic():
     assert by_system.loc["M2 con abstención", "margen"] == pytest.approx(0.15)
     assert pd.isna(by_system.loc["B0", "abstencion"])
     assert pd.isna(by_system.loc["B0", "margen"])
+
+
+def test_summary_systems_synthetic():
+    """Mean and sample standard deviation per system, in first-seen order."""
+    systems = pd.DataFrame(
+        [
+            {
+                "sistema": "B0",
+                "F1_etiqueta": 1.0,
+                "F1_uso_discursivo": 1.0,
+                "F1_macro_CON_OP": 0.5,
+                "precision_etiqueta": 1.0,
+                "cobertura_etiqueta": 1.0,
+            },
+            {
+                "sistema": "B0",
+                "F1_etiqueta": 0.0,
+                "F1_uso_discursivo": 0.0,
+                "F1_macro_CON_OP": 0.0,
+                "precision_etiqueta": 0.0,
+                "cobertura_etiqueta": 0.0,
+            },
+            {
+                "sistema": "B1",
+                "F1_etiqueta": 0.5,
+                "F1_uso_discursivo": 0.5,
+                "F1_macro_CON_OP": 0.5,
+                "precision_etiqueta": 0.5,
+                "cobertura_etiqueta": 0.5,
+            },
+            {
+                "sistema": "B1",
+                "F1_etiqueta": 0.5,
+                "F1_uso_discursivo": 0.5,
+                "F1_macro_CON_OP": 0.5,
+                "precision_etiqueta": 0.5,
+                "cobertura_etiqueta": 0.5,
+            },
+        ]
+    )
+
+    summary = summary_systems(systems)
+
+    assert len(summary) == 2
+    assert list(summary["sistema"]) == ["B0", "B1"]
+    assert summary.loc[0, "F1_etiqueta_mean"] == pytest.approx(0.5)
+    assert summary.loc[0, "F1_etiqueta_std"] == pytest.approx(0.70710678, rel=1e-6)
+    assert summary.loc[1, "F1_etiqueta_std"] == pytest.approx(0.0)
+    assert summary.loc[1, "F1_etiqueta_mean"] == pytest.approx(0.5)

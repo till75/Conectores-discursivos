@@ -224,3 +224,22 @@ def replay_systems(
                 }
             )
     return pd.DataFrame(rows)
+
+
+SUMMARY_METRICS = [
+    "F1_etiqueta",
+    "F1_uso_discursivo",
+    "F1_macro_CON_OP",
+    "precision_etiqueta",
+    "cobertura_etiqueta",
+]
+
+
+def summary_systems(systems: pd.DataFrame) -> pd.DataFrame:
+    """Return the mean and sample standard deviation for each system."""
+    grouped = systems.groupby("sistema", sort=False)[SUMMARY_METRICS]
+    summary = grouped.agg(["mean", "std"]).reset_index()
+    summary.columns = ["sistema"] + [
+        f"{metric}_{stat}" for metric in SUMMARY_METRICS for stat in ("mean", "std")
+    ]
+    return summary
