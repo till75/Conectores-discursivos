@@ -8,7 +8,8 @@
 they contain comment text and must never be published (R5).
 
 This note answers three questions before any modelling: how many videos there
-are, what they are about, and how comments are nested.
+are, what they are about, and how comments are nested. The files themselves are
+audited in [inputs-audit.md](inputs-audit.md).
 
 ## How this was produced
 

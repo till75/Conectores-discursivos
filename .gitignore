@@ -30,6 +30,9 @@ htmlcov/
 Thumbs.db
 Desktop.ini
 
+# Office lock files (created while a workbook is open)
+~$*
+
 # --- Data: YouTube comment text must never be committed (R5) ---
 # Local working data. Only data/README.md is versioned.
 data/*

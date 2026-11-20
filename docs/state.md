@@ -15,6 +15,8 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
 - `docs/results/data-overview/` describes the corpus: 20 videos, 10,505 comments,
   binary depth, 83.5 % single-comment threads, and a 150-row reference that covers
   one video with 65 labelled rows.
+- `docs/results/data-overview/inputs-audit.md` audits the inputs and reconciles
+  19,741 versus 20,097 candidates and 284 versus 273 reference candidates.
 - `.venv` has numpy/pandas/scipy/scikit-learn/spaCy + `es_core_news_sm` +
   sentence-transformers (torch 2.15 CPU). `pytest` 1 passed, `ruff check .` clean.
 

@@ -1,0 +1,65 @@
+=== LISTING
+rows: 705 | distinct forms: 614
+macrofunction: {'Operador': 460, 'Conector': 245}
+polifuncional: {'No': 550, 'Sí': 155}
+forms with exactly one category: 548
+forms with more than one category: 66
+no BOM: True | bytes: 31441
+
+=== RAW VS NORMALIZED
+raw: (10505, 17) | normalized: (10505, 18)
+comment_text differs from comment_text_raw: 1814
+@USER in comment_text: 1830 | in comment_text_raw: 0
+text_normalized differs from comment_text: 6984 (66.5%)
+emoji tokens inserted: 3271
+rows flagged in revisar: 50
+
+=== APPLICATION CANDIDATES
+listing matches on comment_text: 19741
+listing matches on text_normalized: 20097
+difference: 356
+comments with at least one match: 6926 of 10505
+
+=== REFERENCE
+rows: 150 | rows with a label: 65
+spans: 96 | after CSL exclusion: 80
+distinct units: 67
+distinct labels: 12
+candidates after CSL and multiword exclusion: 273
+candidates with a gold label: 64
+candidates without a gold label: 209
+candidates from 'Sin etiquetas' rows: 84
+reference spans the listing never detects: 16
+
+=== CSL
+rows: 16 | distinct units: 15
+distinct comments: 14
+all rows are in the reference: True
+
+=== WORKBOOK
+shape: (1268, 34) | videos: 6
+channels: 4
+threads: 798
+text_normalized non-null: 399 | anotacion_final non-null: 48
+  anotador_1_jorge: reviewed 149, label 65, spans 100, 'Sin etiquetas' 83
+  anotador_2_hernan: reviewed 399, label 5, spans 7, 'Sin etiquetas' 0
+  anotador_3_javier: reviewed 94, label 51, spans 79, 'Sin etiquetas' 14
+  anotadora_4_vannia: reviewed 144, label 61, spans 93, 'Sin etiquetas' 83
+comments by number of annotator columns: {0: 869, 1: 249, 2: 7, 3: 49, 4: 94}
+reference equals comments with two or more columns: True
+real annotators per reference comment: {1: 7, 2: 49, 3: 94}
+videos in the reference: 1
+
+=== AGREEMENT (all pairs)
+  anotador_1_jorge vs anotador_2_hernan: shared 149, both empty 84, agree 1, category 1, detection 3, one empty 60, active agreement 1.5%
+  anotador_1_jorge vs anotador_3_javier: shared 94, both empty 40, agree 18, category 7, detection 10, one empty 19, active agreement 33.3%
+  anotador_1_jorge vs anotadora_4_vannia: shared 143, both empty 70, agree 30, category 8, detection 13, one empty 22, active agreement 41.1%
+  anotador_2_hernan vs anotador_3_javier: shared 94, both empty 42, agree 0, category 0, detection 1, one empty 51, active agreement 0.0%
+  anotador_2_hernan vs anotadora_4_vannia: shared 144, both empty 82, agree 0, category 1, detection 1, one empty 60, active agreement 0.0%
+  anotador_3_javier vs anotadora_4_vannia: shared 94, both empty 40, agree 19, category 7, detection 12, one empty 16, active agreement 35.2%
+
+=== REFERENCE VS ANNOTATORS (labelled reference rows)
+  anotador_1_jorge: identical 31, other labels 23, reviewed with no label 11, not reviewed 0
+  anotador_2_hernan: identical 3, other labels 2, reviewed with no label 60, not reviewed 0
+  anotador_3_javier: identical 19, other labels 19, reviewed with no label 4, not reviewed 23
+  anotadora_4_vannia: identical 58, other labels 3, reviewed with no label 1, not reviewed 3
