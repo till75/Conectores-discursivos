@@ -29,6 +29,9 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
 - Primary metric: keep F1 and add F2 / coverage-at-budget as secondary?
 - Who owns the 21 Nov benchmark and the 40-case M3 validation?
 - Were the 150 pilot comments double-annotated (inter-annotator agreement)?
+- The 150 reference rows all carry the same video title (fuel prices), while the
+  proposal says the pilot has 6 videos. Confirm whether the reference annotation
+  covers one video or six.
 - Where are the application-corpus artifacts? v4 reports 3,655 candidates and
   22.5 % abstention, but `resultados_hito2.zip` has no `aplicacion_*.csv`.
 
@@ -50,6 +53,11 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
   their claim, not something this repository has verified.
 - `cobertura_etiqueta` in the notebook is exact-label recall, not detection recall
   (~0.41 vs ~0.51).
+- YouTube threads are two levels only: all 4,241 replies attach to the thread root,
+  so depth adds nothing beyond `is_reply`. 83.5 % of the 6,264 threads contain a
+  single comment; 49.8 % of comments sit in those threads.
+- Only 65 of the 150 reference rows contain a label: 96 spans over 76 units and
+  12 labels. "150 annotated comments" means reviewed, not labelled.
 
 ## Not in an ADR
 - README in Spanish; `AGENTS.md` and commands in English.
