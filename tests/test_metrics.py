@@ -1,6 +1,7 @@
 """Unit tests for the metric definitions."""
 
 import hashlib
+import json
 
 import pandas as pd
 import pytest
@@ -716,3 +717,68 @@ def test_cli_help(capsys):
     assert "--test-ids" in captured.out
     assert "--output" in captured.out
     assert "--check" in captured.out
+
+
+def test_cli_replay_check(tmp_path):
+    """The CLI reads the files, writes the tables and exits zero on a match."""
+    fixture = _replay_fixture()
+    base = replay(
+        fixture["predictions"],
+        fixture["reference"],
+        fixture["listing"],
+        fixture["csl"],
+        fixture["published"],
+        fixture["hashes"],
+        fixture["test_files"],
+    )
+    predictions_path = tmp_path / "predictions.csv"
+    reference_path = tmp_path / "reference.csv"
+    listing_path = tmp_path / "listing.csv"
+    csl_path = tmp_path / "csl.csv"
+    fixture["predictions"].to_csv(predictions_path, index=False)
+    fixture["reference"].to_csv(reference_path, index=False)
+    fixture["listing"].to_csv(listing_path, index=False)
+    fixture["csl"].to_csv(csl_path, index=False)
+    published = tmp_path / "published"
+    published.mkdir()
+    base.systems.to_csv(published / "resultados_semillas.csv", index=False)
+    base.summary.to_csv(published / "resumen_sistemas.csv", index=False)
+    base.intervals.to_csv(published / "intervalos_confianza.csv", index=False)
+    hashes_path = tmp_path / "hashes.json"
+    hashes_path.write_text(json.dumps(fixture["hashes"]), encoding="utf-8")
+    test_ids = tmp_path / "test_ids"
+    test_ids.mkdir()
+    for seed, text in fixture["test_files"].items():
+        (test_ids / f"test_semilla{seed}.txt").write_bytes(text.encode("utf-8"))
+    output = tmp_path / "output"
+
+    code = main(
+        [
+            "replay",
+            "--predictions",
+            str(predictions_path),
+            "--reference",
+            str(reference_path),
+            "--listing",
+            str(listing_path),
+            "--csl",
+            str(csl_path),
+            "--published",
+            str(published),
+            "--hashes",
+            str(hashes_path),
+            "--test-ids",
+            str(test_ids),
+            "--output",
+            str(output),
+            "--check",
+        ]
+    )
+
+    assert code == 0
+    assert (output / "replay_systems.csv").exists()
+    assert (output / "replay_summary.csv").exists()
+    assert (output / "replay_intervals.csv").exists()
+    assert (output / "replay_diagnostics.csv").exists()
+    report = (output / "replay_report.md").read_text(encoding="utf-8")
+    assert "Deviations: 0" in report

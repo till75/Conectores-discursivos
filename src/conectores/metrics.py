@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -474,8 +476,70 @@ def replay(
     )
 
 
+def _read_summary(path: Path) -> pd.DataFrame:
+    """Read the published summary, flat or with the two-row header."""
+    frame = pd.read_csv(path)
+    if "sistema" in frame.columns and "F1_etiqueta_mean" in frame.columns:
+        return frame
+    frame = pd.read_csv(path, header=[0, 1])
+    frame.columns = [
+        "sistema" if str(first).startswith("Unnamed") else f"{first}_{second}"
+        for first, second in frame.columns
+    ]
+    return frame[frame["sistema"] != "sistema"].reset_index(drop=True)
+
+
+def _format_report(result: ReplayResult) -> str:
+    """Render the replay report without comment text."""
+    lines = [
+        "# Replay report",
+        "",
+        f"- Systems rows: {len(result.systems)}",
+        f"- Summary rows: {len(result.summary)}",
+        f"- Interval rows: {len(result.intervals)}",
+        f"- Deviations: {len(result.deviations)}",
+        "",
+        "## Traceability",
+        "",
+    ]
+    for key, value in result.traceability.items():
+        lines.append(f"- {key}: {value}")
+    lines.extend(["", "## Deviations", ""])
+    if result.deviations:
+        lines.extend(f"- {deviation}" for deviation in result.deviations)
+    else:
+        lines.append("None.")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def _run_replay(args: argparse.Namespace) -> int:
-    """Run the replay subcommand; the file loading follows in the next cycle."""
+    """Read the inputs, replay the tables, and write the outputs."""
+    predictions = pd.read_csv(args.predictions)
+    reference = pd.read_csv(args.reference)
+    listing = pd.read_csv(args.listing)
+    csl = pd.read_csv(args.csl)
+    published_dir = Path(args.published)
+    published = {
+        "systems": pd.read_csv(published_dir / "resultados_semillas.csv"),
+        "summary": _read_summary(published_dir / "resumen_sistemas.csv"),
+        "intervals": pd.read_csv(published_dir / "intervalos_confianza.csv"),
+    }
+    hashes = json.loads(Path(args.hashes).read_text(encoding="utf-8"))
+    test_files = {}
+    for path in sorted(Path(args.test_ids).glob("test_semilla*.txt")):
+        seed = int(path.stem.split("_")[-1].replace("semilla", ""))
+        test_files[seed] = path.read_bytes().decode("utf-8")
+    result = replay(predictions, reference, listing, csl, published, hashes, test_files)
+    output = Path(args.output)
+    output.mkdir(parents=True, exist_ok=True)
+    result.systems.to_csv(output / "replay_systems.csv", index=False)
+    result.summary.to_csv(output / "replay_summary.csv", index=False)
+    result.intervals.to_csv(output / "replay_intervals.csv", index=False)
+    result.diagnostics.to_csv(output / "replay_diagnostics.csv", index=False)
+    (output / "replay_report.md").write_text(_format_report(result), encoding="utf-8")
+    if args.check and result.deviations:
+        return 1
     return 0
 
 
