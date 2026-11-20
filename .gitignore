@@ -47,6 +47,11 @@ predicciones_test_con_ventana.csv
 *_con_contexto.csv
 *_con_ventana.csv
 
+# Private team audio (WhatsApp voice notes). Transcribe locally; never commit.
+doc/*.ogg
+doc/*.opus
+doc/*.m4a
+
 # Model and Hugging Face caches
 .cache/
 *.pt
