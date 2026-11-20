@@ -6,6 +6,7 @@ import pytest
 from conectores.metrics import (
     NO,
     bootstrap_difference,
+    compare_tables,
     compute_metrics,
     replay_intervals,
     replay_systems,
@@ -320,3 +321,68 @@ def test_replay_intervals_synthetic():
     assert intervals["IC_inf"].between(-1, 1).all()
     assert intervals["IC_sup"].between(-1, 1).all()
     assert replay_intervals(predictions, undetected, n=1000).equals(intervals)
+
+
+def _published_systems():
+    return pd.DataFrame(
+        [
+            {
+                "sistema": "B0",
+                "semilla": 0,
+                "F1_etiqueta": 0.315,
+                "abstencion": float("nan"),
+            },
+            {
+                "sistema": "B1",
+                "semilla": 0,
+                "F1_etiqueta": 0.328,
+                "abstencion": float("nan"),
+            },
+        ]
+    )
+
+
+def test_compare_tables_matches():
+    """Identical tables produce no deviations, and NaN equals NaN."""
+    published = _published_systems()
+
+    assert compare_tables(published.copy(), published, ["sistema", "semilla"]) == []
+
+
+def test_compare_tables_reports_deviation():
+    """One perturbed cell is named with its key and column."""
+    published = _published_systems()
+    replayed = published.copy()
+    replayed.loc[0, "F1_etiqueta"] = 0.316
+
+    deviations = compare_tables(replayed, published, ["sistema", "semilla"])
+
+    assert len(deviations) == 1
+    assert "sistema=B0" in deviations[0]
+    assert "semilla=0" in deviations[0]
+    assert "F1_etiqueta" in deviations[0]
+
+
+def test_compare_tables_rounds_to_three_decimals():
+    """A difference below the third decimal is not a deviation."""
+    published = _published_systems()
+    replayed = published.copy()
+    replayed.loc[0, "F1_etiqueta"] = 0.3154
+
+    assert compare_tables(replayed, published, ["sistema", "semilla"]) == []
+
+    replayed.loc[0, "F1_etiqueta"] = 0.3156
+    deviations = compare_tables(replayed, published, ["sistema", "semilla"])
+    assert len(deviations) == 1
+
+
+def test_compare_tables_detects_missing_row():
+    """A key absent from the replay is reported as missing."""
+    published = _published_systems()
+    replayed = published.iloc[:1].copy()
+
+    deviations = compare_tables(replayed, published, ["sistema", "semilla"])
+
+    assert len(deviations) == 1
+    assert "sistema=B1" in deviations[0]
+    assert "missing" in deviations[0]

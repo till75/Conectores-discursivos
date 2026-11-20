@@ -278,3 +278,58 @@ def replay_intervals(
                 }
             )
     return pd.DataFrame(rows)
+
+
+def _format_key(keys: Sequence[str], key: object) -> str:
+    """Format a row key as ``sistema=B0, semilla=0``."""
+    if len(keys) == 1:
+        return f"{keys[0]}={key}"
+    return ", ".join(
+        f"{name}={value}" for name, value in zip(keys, key, strict=True)
+    )
+
+
+def _values_differ(expected: object, actual: object, decimals: int) -> bool:
+    """Compare two cells, treating NaN as equal and rounding numbers."""
+    expected_missing = pd.isna(expected)
+    actual_missing = pd.isna(actual)
+    if expected_missing and actual_missing:
+        return False
+    if expected_missing or actual_missing:
+        return True
+    if isinstance(expected, (bool, np.bool_)) or isinstance(actual, (bool, np.bool_)):
+        return bool(expected) != bool(actual)
+    try:
+        return abs(
+            round(float(expected), decimals) - round(float(actual), decimals)
+        ) > 1e-9
+    except (TypeError, ValueError):
+        return expected != actual
+
+
+def compare_tables(
+    replayed: pd.DataFrame,
+    published: pd.DataFrame,
+    key_columns: Sequence[str],
+    decimals: int = 3,
+) -> list[str]:
+    """Return one named deviation per mismatched cell."""
+    keys = list(key_columns)
+    value_columns = [column for column in published.columns if column not in keys]
+    replayed_by_key = replayed.set_index(keys)
+    published_by_key = published.set_index(keys)
+    deviations = []
+    for key, expected_row in published_by_key.iterrows():
+        if key not in replayed_by_key.index:
+            deviations.append(f"{_format_key(keys, key)}: missing from replay")
+            continue
+        actual_row = replayed_by_key.loc[key]
+        for column in value_columns:
+            expected = expected_row[column]
+            actual = actual_row[column]
+            if _values_differ(expected, actual, decimals):
+                deviations.append(
+                    f"{_format_key(keys, key)}, {column}: "
+                    f"replay {actual!r} != published {expected!r}"
+                )
+    return deviations
