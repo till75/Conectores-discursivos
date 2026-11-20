@@ -378,3 +378,58 @@ def traceability(predictions: pd.DataFrame) -> dict[str, int]:
         ),
         "revisar_categoria": int(discourse["revisar_categoria"].sum()),
     }
+
+
+@dataclass(frozen=True)
+class ReplayResult:
+    """The replayed tables and the deviations from the published ones."""
+
+    systems: pd.DataFrame
+    summary: pd.DataFrame
+    intervals: pd.DataFrame
+    diagnostics: pd.DataFrame
+    traceability: Mapping[str, int]
+    deviations: list[str]
+
+
+def replay(
+    predictions: pd.DataFrame,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    csl: pd.DataFrame,
+    published: Mapping[str, pd.DataFrame],
+    hashes: Mapping[str, str],
+    test_files: Mapping[int, str],
+    n: int = 1000,
+) -> ReplayResult:
+    """Return the replayed tables and the deviations from the published ones."""
+    test_ids = {seed: text.split() for seed, text in test_files.items()}
+    undetected = undetected_labels(reference, listing, csl)
+    totals, per_thread = count_undetected(undetected, reference, test_ids)
+    margins = {
+        (int(row.semilla), row.sistema): float(row.margen)
+        for row in published["systems"].itertuples()
+        if row.sistema in ("M1 con abstención", "M2 con abstención")
+        and not pd.isna(row.margen)
+    }
+    systems = replay_systems(predictions, margins, totals)
+    summary = summary_systems(systems)
+    intervals = replay_intervals(predictions, per_thread, n=n)
+    diagnostics = pd.DataFrame(
+        [
+            {
+                "semilla": seed,
+                "candidatas": int((predictions["semilla"] == seed).sum()),
+                "no_detectadas": totals[seed],
+            }
+            for seed in sorted(totals)
+        ]
+    )
+    return ReplayResult(
+        systems=systems,
+        summary=summary,
+        intervals=intervals,
+        diagnostics=diagnostics,
+        traceability=traceability(predictions),
+        deviations=[],
+    )

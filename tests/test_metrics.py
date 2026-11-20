@@ -1,14 +1,18 @@
 """Unit tests for the metric definitions."""
 
+import hashlib
+
 import pandas as pd
 import pytest
 
 from conectores.metrics import (
     NO,
+    ReplayResult,
     bootstrap_difference,
     compare_tables,
     compute_metrics,
     count_undetected,
+    replay,
     replay_intervals,
     replay_systems,
     summary_systems,
@@ -469,3 +473,177 @@ def test_traceability_counts():
         "elegidas_modelo_correctas": 1,
         "revisar_categoria": 1,
     }
+
+
+def _replay_fixture():
+    """Two seeds, four candidates and two undetected labels."""
+    predictions = pd.DataFrame(
+        [
+            {
+                "semilla": 0,
+                "comment_id": "c1",
+                "thread_id": "t1",
+                "unidad": "ya",
+                "oro": "CON:ADICIÓN",
+                "B0": "CON:ADICIÓN",
+                "B1": NO,
+                "M1": "CON:ADICIÓN",
+                "M2": "CON:ADICIÓN",
+                "p_M1": 0.9,
+                "p_M2": 0.9,
+                "abstiene_M2": False,
+                "origen_M2": "listado",
+                "revisar_categoria": False,
+            },
+            {
+                "semilla": 0,
+                "comment_id": "c2",
+                "thread_id": "t2",
+                "unidad": "no",
+                "oro": "OP:MODAL",
+                "B0": "OP:MODAL",
+                "B1": NO,
+                "M1": "OP:MODAL",
+                "M2": "OP:MODAL",
+                "p_M1": 0.9,
+                "p_M2": 0.9,
+                "abstiene_M2": False,
+                "origen_M2": "modelo",
+                "revisar_categoria": False,
+            },
+            {
+                "semilla": 1,
+                "comment_id": "c4",
+                "thread_id": "t4",
+                "unidad": "ya",
+                "oro": "CON:ADICIÓN",
+                "B0": "CON:ADICIÓN",
+                "B1": NO,
+                "M1": "CON:ADICIÓN",
+                "M2": "CON:ADICIÓN",
+                "p_M1": 0.9,
+                "p_M2": 0.9,
+                "abstiene_M2": False,
+                "origen_M2": "listado",
+                "revisar_categoria": False,
+            },
+            {
+                "semilla": 1,
+                "comment_id": "c5",
+                "thread_id": "t5",
+                "unidad": "no",
+                "oro": NO,
+                "B0": NO,
+                "B1": NO,
+                "M1": NO,
+                "M2": NO,
+                "p_M1": 0.1,
+                "p_M2": 0.1,
+                "abstiene_M2": False,
+                "origen_M2": "modelo",
+                "revisar_categoria": False,
+            },
+        ]
+    )
+    reference = pd.DataFrame(
+        [
+            {
+                "comment_id": "c1",
+                "thread_id": "t1",
+                "anotacion": "[ya::CON:ADICIÓN]",
+            },
+            {
+                "comment_id": "c2",
+                "thread_id": "t2",
+                "anotacion": "[no::OP:MODAL]",
+            },
+            {
+                "comment_id": "c3",
+                "thread_id": "t3",
+                "anotacion": "[pues::OP:MODAL]",
+            },
+            {
+                "comment_id": "c4",
+                "thread_id": "t4",
+                "anotacion": "[ya::CON:ADICIÓN]",
+            },
+            {
+                "comment_id": "c5",
+                "thread_id": "t5",
+                "anotacion": "[no::NO_DISCURSIVO]",
+            },
+            {
+                "comment_id": "c6",
+                "thread_id": "t6",
+                "anotacion": "[pues::OP:MODAL]",
+            },
+        ]
+    )
+    listing = pd.DataFrame({"unidad": ["ya", "no"]})
+    csl = pd.DataFrame({"comment_id": [], "unidad": []})
+    published_systems = pd.DataFrame(
+        [
+            {"sistema": "M1 con abstención", "semilla": 0, "margen": 0.1},
+            {"sistema": "M2 con abstención", "semilla": 0, "margen": 0.15},
+            {"sistema": "M1 con abstención", "semilla": 1, "margen": 0.1},
+            {"sistema": "M2 con abstención", "semilla": 1, "margen": 0.15},
+        ]
+    )
+    test_files = {0: "c1\nc2\nc3\n", 1: "c4\nc5\nc6\n"}
+    hashes = {
+        str(seed): hashlib.sha256(text.encode("utf-8")).hexdigest()
+        for seed, text in test_files.items()
+    }
+    return {
+        "predictions": predictions,
+        "reference": reference,
+        "listing": listing,
+        "csl": csl,
+        "published": {
+            "systems": published_systems,
+            "summary": pd.DataFrame(),
+            "intervals": pd.DataFrame(),
+        },
+        "hashes": hashes,
+        "test_files": test_files,
+    }
+
+
+def test_replay_tables_synthetic():
+    """The replay combines the tables and the diagnostics for two seeds."""
+    fixture = _replay_fixture()
+
+    result = replay(**fixture, n=200)
+
+    assert isinstance(result, ReplayResult)
+    assert len(result.systems) == 12
+    assert len(result.summary) == 6
+    assert len(result.intervals) == 6
+    assert result.diagnostics.to_dict("records") == [
+        {"semilla": 0, "candidatas": 2, "no_detectadas": 1},
+        {"semilla": 1, "candidatas": 2, "no_detectadas": 1},
+    ]
+    assert result.traceability == {
+        "etiquetas_discursivas": 3,
+        "fijadas_listado": 2,
+        "fijadas_listado_correctas": 2,
+        "elegidas_modelo": 1,
+        "elegidas_modelo_correctas": 1,
+        "revisar_categoria": 0,
+    }
+    assert result.deviations == []
+    systems = result.systems.set_index(["semilla", "sistema"])
+    assert systems.loc[(0, "B0"), "F1_etiqueta"] == pytest.approx(0.8)
+    assert systems.loc[(0, "B1"), "F1_etiqueta"] == pytest.approx(0.0)
+    assert systems.loc[(0, "M2"), "F1_etiqueta"] == pytest.approx(0.8)
+    assert systems.loc[(1, "B0"), "F1_etiqueta"] == pytest.approx(2 / 3)
+    assert systems.loc[(1, "B1"), "F1_etiqueta"] == pytest.approx(0.0)
+    assert systems.loc[(1, "M2"), "F1_etiqueta"] == pytest.approx(2 / 3)
+    assert result.intervals["excluye_cero"].tolist() == [
+        True,
+        False,
+        True,
+        False,
+        False,
+        False,
+    ]
