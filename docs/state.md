@@ -29,6 +29,11 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
    (team benchmark, 21 Nov); M3 rules (team plan, 25 Nov).
 3. Then `/learn` for slice A and `/spec` + `/spec-review` before any `/tdd`.
 
+Future work, not this slice: a local open LLM as a measured teacher with a
+frozen prompt and human adjudication. See
+`docs/research/local-llm-annotation.md`; the GPU constraint change needs an ADR
+before it enters the deliverable.
+
 ## Open questions
 - Git remote: the proposal still says "[pegar enlace de GitHub]". None configured.
 - Primary metric: keep F1 and add F2 / coverage-at-budget as secondary?
