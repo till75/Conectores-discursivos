@@ -243,3 +243,38 @@ def summary_systems(systems: pd.DataFrame) -> pd.DataFrame:
         f"{metric}_{stat}" for metric in SUMMARY_METRICS for stat in ("mean", "std")
     ]
     return summary
+
+
+COMPARISONS = [("M2", "B1"), ("M2", "M1"), ("M1", "B1")]
+
+
+def replay_intervals(
+    predictions: pd.DataFrame,
+    undetected_by_thread: Mapping[int, Mapping[str, int]],
+    n: int = 1000,
+) -> pd.DataFrame:
+    """Return the 95% interval for each comparison and seed."""
+    rows = []
+    for seed in sorted(predictions["semilla"].unique()):
+        group = predictions[predictions["semilla"] == seed]
+        n_undetected = undetected_by_thread.get(int(seed), {})
+        for system_a, system_b in COMPARISONS:
+            low, high = bootstrap_difference(
+                group["oro"].tolist(),
+                group[system_a].tolist(),
+                group[system_b].tolist(),
+                group["thread_id"].tolist(),
+                n_undetected,
+                n=n,
+                seed=int(seed),
+            )
+            rows.append(
+                {
+                    "comparacion": f"{system_a} − {system_b}",
+                    "semilla": int(seed),
+                    "IC_inf": low,
+                    "IC_sup": high,
+                    "excluye_cero": low > 0 or high < 0,
+                }
+            )
+    return pd.DataFrame(rows)

@@ -7,6 +7,7 @@ from conectores.metrics import (
     NO,
     bootstrap_difference,
     compute_metrics,
+    replay_intervals,
     replay_systems,
     summary_systems,
     undetected_labels,
@@ -248,3 +249,74 @@ def test_summary_systems_synthetic():
     assert summary.loc[0, "F1_etiqueta_std"] == pytest.approx(0.70710678, rel=1e-6)
     assert summary.loc[1, "F1_etiqueta_std"] == pytest.approx(0.0)
     assert summary.loc[1, "F1_etiqueta_mean"] == pytest.approx(0.5)
+
+
+def test_replay_intervals_synthetic():
+    """Two seeds, three comparisons each; flags follow the thread pattern.
+
+    Seed 0: both threads favour M2 and M1 over B1, so the intervals for
+    M2-B1 and M1-B1 exclude zero, while M2-M1 stays at zero.
+    Seed 1: the threads split between M2 and B1, so every interval includes
+    zero. The bootstrap is deterministic, so two calls must agree.
+    """
+    predictions = pd.DataFrame(
+        [
+            {
+                "semilla": 0,
+                "thread_id": "t1",
+                "oro": "CON:ADICIÓN",
+                "B1": NO,
+                "M1": "CON:ADICIÓN",
+                "M2": "CON:ADICIÓN",
+            },
+            {
+                "semilla": 0,
+                "thread_id": "t2",
+                "oro": "OP:MODAL",
+                "B1": NO,
+                "M1": "OP:MODAL",
+                "M2": "OP:MODAL",
+            },
+            {
+                "semilla": 1,
+                "thread_id": "t3",
+                "oro": "CON:ADICIÓN",
+                "B1": NO,
+                "M1": NO,
+                "M2": "CON:ADICIÓN",
+            },
+            {
+                "semilla": 1,
+                "thread_id": "t4",
+                "oro": "OP:MODAL",
+                "B1": "OP:MODAL",
+                "M1": "OP:MODAL",
+                "M2": NO,
+            },
+        ]
+    )
+    undetected = {0: {"t1": 0, "t2": 0}, 1: {"t3": 0, "t4": 0}}
+
+    intervals = replay_intervals(predictions, undetected, n=1000)
+
+    assert len(intervals) == 6
+    assert list(intervals["comparacion"]) == [
+        "M2 − B1",
+        "M2 − M1",
+        "M1 − B1",
+        "M2 − B1",
+        "M2 − M1",
+        "M1 − B1",
+    ]
+    assert list(intervals["semilla"]) == [0, 0, 0, 1, 1, 1]
+    assert intervals["excluye_cero"].tolist() == [
+        True,
+        False,
+        True,
+        False,
+        False,
+        False,
+    ]
+    assert intervals["IC_inf"].between(-1, 1).all()
+    assert intervals["IC_sup"].between(-1, 1).all()
+    assert replay_intervals(predictions, undetected, n=1000).equals(intervals)
