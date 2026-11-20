@@ -2,50 +2,58 @@
 
 ## Where we are
 The pilot experiment exists only as a Colab notebook in `doc/`; this repository has
-the environment, workflow, and templates, but no system code. No slice has started.
+the environment, workflow, and templates, but no system code. The hito 2 results and
+their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
+`doc/Justificación de parámetros y requisitos · Equipo 11.docx`.
 
 ## Done since last handoff
-- `0b50b55` scaffold: `.venv` (Python 3.14), `pyproject.toml`, git, privacy-aware
-  `.gitignore`, CI workflow.
+- `0b50b55` scaffold: `.venv` (Python 3.14), `pyproject.toml`, git,
+  privacy-aware `.gitignore`, CI workflow.
 - `a621359` README filename fix.
-- `ef669c7` `/onboard` command, `doc/` marked read-only evidence, status corrected.
+- `ef669c7` `/onboard`, `doc/` marked read-only evidence, README status corrected.
+- `2866a29` proposal v4, parameter justification, slides v2; private audio ignored.
 - `.venv` has numpy/pandas/scipy/scikit-learn/spaCy + `es_core_news_sm` +
   sentence-transformers (torch 2.15 CPU). `pytest` 1 passed, `ruff check .` clean.
 
 ## Next
-1. Run `/grill` on `doc/Equipo11_Propuesta_v3_equipo.docx` to write
-   `docs/00-brief.md`. R1–R7 and restrictions a)–d) are already fixed there; the
-   grilling separates decisions from assumptions, it does not re-invent them.
-2. Run `/plan` to write `docs/plan.md` and choose the slice order.
-3. Then `/learn` for slice A: metrics from the published predictions in
-   `doc/resultados_hito2.zip`, with no model. Optional before that: `/onboard` to
-   write `docs/00-onboarding.md` (English now, Spanish later).
-4. Only after `/spec-review` approval: `/tdd`.
+1. Run `/grill` on `doc/Equipo11_Propuesta_v4_hito2.docx` to write
+   `docs/00-brief.md`. R1–R7 are already fixed there; the grilling separates
+   decisions from assumptions, it does not re-invent them.
+2. Run `/plan`. Candidate slices: reproduce the published table; recompute the
+   metrics from `predicciones_test.csv` with no model; the embedding ablation
+   (team benchmark, 21 Nov); M3 rules (team plan, 25 Nov).
+3. Then `/learn` for slice A and `/spec` + `/spec-review` before any `/tdd`.
 
 ## Open questions
-- Did the 20 Nov intermediate presentation happen? (blocking for planning)
 - Git remote: the proposal still says "[pegar enlace de GitHub]". None configured.
-- Primary metric: keep F1 and add F2 on the binary decision as secondary?
-- Who owns the application-corpus run (due 25 Nov)?
+- Primary metric: keep F1 and add F2 / coverage-at-budget as secondary?
+- Who owns the 21 Nov benchmark and the 40-case M3 validation?
 - Were the 150 pilot comments double-annotated (inter-annotator agreement)?
+- Where are the application-corpus artifacts? v4 reports 3,655 candidates and
+  22.5 % abstention, but `resultados_hito2.zip` has no `aplicacion_*.csv`.
 
 ## Gotchas
-- `doc/` filenames contain `·` (U+00B7) and a combining acute; enumerate them with
+- `doc/` filenames contain `·` (U+00B7) and a combining acute; enumerate with
   `Get-ChildItem`, never retype them.
 - `doc/` notebooks fail ruff (129 errors); excluded in `pyproject.toml`.
-- Comment text and `author_hash` are gitignored (R5). Never paste them into docs,
-  commits, tests, or reports.
+- Comment text and `author_hash` are gitignored (R5); private audio too. Never
+  paste them into docs, commits, tests, or reports.
 - Versions differ from Colab (pandas 3.1.1, scikit-learn 1.9.1, spaCy 3.8.18,
   torch 2.15). The published 0.483 may not reproduce; checking that is step one.
 - Five seeds over 150 comments means every comment reaches a test eventually:
   repeated grouped holdout, not one frozen test.
+- The v4 proposal already declares the CI failure (1 of 5 seeds) and the abstention
+  overrun (seeds 2 and 4). Do not present these as new findings.
+- Only OP:ARGUMENTATIVO and OP:MODAL reach 5 test examples; 10 of 12 categories
+  do not, so per-category F1 is not estimable for them.
+- The team reports two independent runs with identical hashes and results; that is
+  their claim, not something this repository has verified.
 - `cobertura_etiqueta` in the notebook is exact-label recall, not detection recall
   (~0.41 vs ~0.51).
-- M2 − B1 bootstrap CI includes zero in 4 of 5 seeds; M1 − B1 in 5 of 5.
 
 ## Not in an ADR
 - README in Spanish; `AGENTS.md` and commands in English.
-- `doc/` is read-only evidence.
+- `doc/` is read-only evidence; voice notes are never committed.
 - `gate.toml` holds the protocol constants.
 - Onboarding counts as a slice.
 - CI installs `.[dev]` only, not the embeddings extra.
