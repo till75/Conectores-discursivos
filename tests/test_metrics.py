@@ -8,6 +8,7 @@ from conectores.metrics import (
     bootstrap_difference,
     compare_tables,
     compute_metrics,
+    count_undetected,
     replay_intervals,
     replay_systems,
     summary_systems,
@@ -386,3 +387,49 @@ def test_compare_tables_detects_missing_row():
     assert len(deviations) == 1
     assert "sistema=B1" in deviations[0]
     assert "missing" in deviations[0]
+
+
+def test_count_undetected_uses_test_threads():
+    """Only undetected labels in the seed's frozen test threads count."""
+    predictions = pd.DataFrame(
+        [
+            {"semilla": 0, "comment_id": "c1", "thread_id": "t1"},
+            {"semilla": 0, "comment_id": "c1.r1", "thread_id": "t1"},
+            {"semilla": 0, "comment_id": "c2", "thread_id": "t2"},
+            {"semilla": 1, "comment_id": "c3", "thread_id": "t3"},
+        ]
+    )
+    undetected = pd.DataFrame(
+        [
+            {
+                "comment_id": "c1",
+                "thread_id": "t1",
+                "unidad": "ya",
+                "oro": "CON:ADICIÓN",
+            },
+            {
+                "comment_id": "c1.r1",
+                "thread_id": "t1",
+                "unidad": "pues",
+                "oro": "CON:CONSECUENCIA",
+            },
+            {
+                "comment_id": "c2",
+                "thread_id": "t2",
+                "unidad": "igual",
+                "oro": "CON:ADICIÓN",
+            },
+            {
+                "comment_id": "c3",
+                "thread_id": "t3",
+                "unidad": "solo",
+                "oro": "OP:MODAL",
+            },
+        ]
+    )
+    test_ids = {0: ["c1", "c1.r1"], 1: ["c3"]}
+
+    totals, per_thread = count_undetected(undetected, predictions, test_ids)
+
+    assert totals == {0: 2, 1: 1}
+    assert per_thread == {0: {"t1": 2}, 1: {"t3": 1}}

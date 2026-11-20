@@ -333,3 +333,28 @@ def compare_tables(
                     f"replay {actual!r} != published {expected!r}"
                 )
     return deviations
+
+
+def count_undetected(
+    undetected: pd.DataFrame,
+    predictions: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+) -> tuple[dict[int, int], dict[int, dict[str, int]]]:
+    """Return undetected totals and per-thread counts for each seed."""
+    totals: dict[int, int] = {}
+    per_thread: dict[int, dict[str, int]] = {}
+    for seed in sorted(predictions["semilla"].unique()):
+        seed_predictions = predictions[predictions["semilla"] == seed]
+        test_comments = set(test_ids.get(int(seed), ()))
+        test_threads = set(
+            seed_predictions.loc[
+                seed_predictions["comment_id"].isin(test_comments), "thread_id"
+            ]
+        )
+        seed_undetected = undetected[undetected["thread_id"].isin(test_threads)]
+        totals[int(seed)] = len(seed_undetected)
+        per_thread[int(seed)] = {
+            str(thread): int(count)
+            for thread, count in seed_undetected.groupby("thread_id").size().items()
+        }
+    return totals, per_thread
