@@ -647,3 +647,24 @@ def test_replay_tables_synthetic():
         False,
         False,
     ]
+
+
+def test_replay_reports_deviations_and_hashes():
+    """A perturbed cell and a wrong hash are both named."""
+    fixture = _replay_fixture()
+    first = replay(**fixture, n=200)
+    published = {
+        "systems": first.systems.copy(),
+        "summary": first.summary.copy(),
+        "intervals": first.intervals.copy(),
+    }
+    published["systems"].loc[0, "F1_etiqueta"] = 0.123
+    hashes = dict(fixture["hashes"])
+    hashes["0"] = "0" * 64
+
+    result = replay(
+        **{**fixture, "published": published, "hashes": hashes}, n=200
+    )
+
+    assert any("F1_etiqueta" in deviation for deviation in result.deviations)
+    assert any("hash" in deviation.lower() for deviation in result.deviations)

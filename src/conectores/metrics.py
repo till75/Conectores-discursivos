@@ -7,6 +7,7 @@ later slices.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -425,11 +426,31 @@ def replay(
             for seed in sorted(totals)
         ]
     )
+    deviations = []
+    tables = {
+        "systems": (systems, ["sistema", "semilla"]),
+        "summary": (summary, ["sistema"]),
+        "intervals": (intervals, ["comparacion", "semilla"]),
+    }
+    for name, (replayed, keys) in tables.items():
+        published_table = published.get(name)
+        if published_table is None or published_table.empty:
+            continue
+        deviations.extend(compare_tables(replayed, published_table, keys))
+    for seed, text in test_files.items():
+        expected = hashes.get(str(seed))
+        actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        if expected is None:
+            deviations.append(f"hash semilla {seed}: missing from hashes.json")
+        elif expected != actual:
+            deviations.append(
+                f"hash semilla {seed}: replay {actual} != published {expected}"
+            )
     return ReplayResult(
         systems=systems,
         summary=summary,
         intervals=intervals,
         diagnostics=diagnostics,
         traceability=traceability(predictions),
-        deviations=[],
+        deviations=deviations,
     )
