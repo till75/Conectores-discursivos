@@ -31,10 +31,10 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
 - Git remote: the proposal still says "[pegar enlace de GitHub]". None configured.
 - Primary metric: keep F1 and add F2 / coverage-at-budget as secondary?
 - Who owns the 21 Nov benchmark and the 40-case M3 validation?
-- Were the 150 pilot comments double-annotated (inter-annotator agreement)?
-- The 150 reference rows all carry the same video title (fuel prices), while the
-  proposal says the pilot has 6 videos. Confirm whether the reference annotation
-  covers one video or six.
+- How was the reference adjudicated? `anotacion_final` has 48 rows against 65
+  labelled reference rows, and the reference matches Vannia's column in 58 of 65.
+- Was every candidate reviewed, or only the salient ones? 209 of 273 are implicit
+  negatives, so this decides whether precision and recall are meaningful.
 - Where are the application-corpus artifacts? v4 reports 3,655 candidates and
   22.5 % abstention, but `resultados_hito2.zip` has no `aplicacion_*.csv`.
 
@@ -59,8 +59,21 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
 - YouTube threads are two levels only: all 4,241 replies attach to the thread root,
   so depth adds nothing beyond `is_reply`. 83.5 % of the 6,264 threads contain a
   single comment; 49.8 % of comments sit in those threads.
-- Only 65 of the 150 reference rows contain a label: 96 spans over 76 units and
-  12 labels. "150 annotated comments" means reviewed, not labelled.
+- Only 65 of the 150 reference rows contain a label: 96 spans over 67 distinct
+  units (lowercase) and 12 labels. "150 annotated comments" means reviewed, not
+  labelled; 85 rows say "Sin etiquetas" and contribute 84 negative candidates.
+- Of the 273 reference candidates, 64 are positive and 209 are implicit
+  negatives. The annotation marks connectors, not every non-connector, so the
+  negative class assumes unmarked occurrences were reviewed. Verify before
+  trusting precision and recall.
+- The 150 reference rows are exactly the comments with at least two annotations
+  in the workbook, and all come from one video (fuel prices). The workbook has
+  6 videos and 1,268 comments; 399 are normalized and 150 annotated.
+- Hernán's column covers 399 rows but carries labels in only 5, and it never
+  agrees with the other three on an active comment. Treat it as the working text
+  column, not as an independent annotation, until the team confirms.
+- Application candidates: 19,741 on `comment_text` and 20,097 on
+  `text_normalized`. The v4 figure is the pre-normalization count.
 
 ## Not in an ADR
 - README in Spanish; `AGENTS.md` and commands in English.
