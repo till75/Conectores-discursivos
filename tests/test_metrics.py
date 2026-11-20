@@ -12,6 +12,7 @@ from conectores.metrics import (
     compare_tables,
     compute_metrics,
     count_undetected,
+    main,
     replay,
     replay_intervals,
     replay_systems,
@@ -697,3 +698,21 @@ def test_replay_reports_deviations_and_hashes():
 
     assert any("F1_etiqueta" in deviation for deviation in result.deviations)
     assert any("hash" in deviation.lower() for deviation in result.deviations)
+
+
+def test_cli_help(capsys):
+    """The replay command exposes its options."""
+    with pytest.raises(SystemExit) as excinfo:
+        main(["replay", "--help"])
+
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "--predictions" in captured.out
+    assert "--reference" in captured.out
+    assert "--listing" in captured.out
+    assert "--csl" in captured.out
+    assert "--published" in captured.out
+    assert "--hashes" in captured.out
+    assert "--test-ids" in captured.out
+    assert "--output" in captured.out
+    assert "--check" in captured.out

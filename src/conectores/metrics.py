@@ -7,6 +7,7 @@ later slices.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import re
 from collections.abc import Mapping, Sequence
@@ -471,3 +472,34 @@ def replay(
         traceability=traceability(predictions),
         deviations=deviations,
     )
+
+
+def _run_replay(args: argparse.Namespace) -> int:
+    """Run the replay subcommand; the file loading follows in the next cycle."""
+    return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the metric-replay command line."""
+    parser = argparse.ArgumentParser(prog="python -m conectores.metrics")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    replay_parser = subparsers.add_parser(
+        "replay", help="Replay the published metric tables."
+    )
+    replay_parser.add_argument("--predictions", required=True)
+    replay_parser.add_argument("--reference", required=True)
+    replay_parser.add_argument("--listing", required=True)
+    replay_parser.add_argument("--csl", required=True)
+    replay_parser.add_argument("--published", required=True)
+    replay_parser.add_argument("--hashes", required=True)
+    replay_parser.add_argument("--test-ids", required=True)
+    replay_parser.add_argument("--output", required=True)
+    replay_parser.add_argument("--check", action="store_true")
+    args = parser.parse_args(argv)
+    if args.command == "replay":
+        return _run_replay(args)
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
