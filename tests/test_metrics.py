@@ -3,7 +3,12 @@
 import pandas as pd
 import pytest
 
-from conectores.metrics import NO, compute_metrics, undetected_labels
+from conectores.metrics import (
+    NO,
+    bootstrap_difference,
+    compute_metrics,
+    undetected_labels,
+)
 
 
 def test_compute_metrics_hand_checked():
@@ -96,3 +101,42 @@ def test_undetected_labels_boundaries():
             "oro": "NO_DISCURSIVO",
         }
     ]
+
+
+def _bootstrap_fixture():
+    """Twenty threads, alternating which system is right."""
+    gold, pred_a, pred_b, threads = [], [], [], []
+    for index in range(20):
+        thread = f"t{index}"
+        if index % 2 == 0:
+            gold.extend(["CON:ADICIÓN", NO])
+            pred_a.extend(["CON:ADICIÓN", NO])
+            pred_b.extend([NO, NO])
+        else:
+            gold.extend(["OP:MODAL", NO])
+            pred_a.extend([NO, NO])
+            pred_b.extend(["OP:MODAL", NO])
+        threads.extend([thread, thread])
+    undetected = {f"t{index}": 0 for index in range(20)}
+    return gold, pred_a, pred_b, threads, undetected
+
+
+def test_bootstrap_deterministic():
+    """Same seed gives the same interval; a different seed moves it."""
+    gold, pred_a, pred_b, threads, undetected = _bootstrap_fixture()
+
+    first = bootstrap_difference(
+        gold, pred_a, pred_b, threads, undetected, n=200, seed=0
+    )
+    second = bootstrap_difference(
+        gold, pred_a, pred_b, threads, undetected, n=200, seed=0
+    )
+    other = bootstrap_difference(
+        gold, pred_a, pred_b, threads, undetected, n=200, seed=1
+    )
+
+    assert first == second
+    assert first[0] < first[1]
+    assert -1 <= first[0] <= 1
+    assert -1 <= first[1] <= 1
+    assert first != other

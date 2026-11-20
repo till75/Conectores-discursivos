@@ -8,9 +8,10 @@ later slices.
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+import numpy as np
 import pandas as pd
 
 NO = "NO_DISCURSIVO"
@@ -139,3 +140,34 @@ def undetected_labels(
                     }
                 )
     return pd.DataFrame(rows, columns=["comment_id", "thread_id", "unidad", "oro"])
+
+
+def bootstrap_difference(
+    gold: Sequence[str],
+    pred_a: Sequence[str],
+    pred_b: Sequence[str],
+    thread_id: Sequence[str],
+    n_undetected_by_thread: Mapping[str, int],
+    n: int = 1000,
+    seed: int = 0,
+) -> tuple[float, float]:
+    """Return the 95% interval of the F1 difference, resampling threads."""
+    rng = np.random.default_rng(seed)
+    threads = list(dict.fromkeys(thread_id))
+    indices_by_thread = {
+        thread: [index for index, value in enumerate(thread_id) if value == thread]
+        for thread in threads
+    }
+    differences = []
+    for _ in range(n):
+        sample = rng.choice(len(threads), size=len(threads), replace=True)
+        chosen = [threads[index] for index in sample]
+        indices = [index for thread in chosen for index in indices_by_thread[thread]]
+        undetected = sum(n_undetected_by_thread.get(thread, 0) for thread in chosen)
+        gold_sample = [gold[index] for index in indices]
+        a_sample = [pred_a[index] for index in indices]
+        b_sample = [pred_b[index] for index in indices]
+        f1_a = compute_metrics(gold_sample, a_sample, undetected).f1_label
+        f1_b = compute_metrics(gold_sample, b_sample, undetected).f1_label
+        differences.append(f1_a - f1_b)
+    return tuple(float(value) for value in np.percentile(differences, [2.5, 97.5]))
