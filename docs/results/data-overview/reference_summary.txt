@@ -1,0 +1,8 @@
+rows: 150
+rows with at least one label: 65
+label spans: 96
+distinct units: 76
+distinct labels: 12
+distinct video titles: 1
+titles: {'La explicación tras el alza histórica de combustibles anunciada por el Gobierno: ¿habrá más medidas?': 150}
+comment_ids present in application corpus: 0

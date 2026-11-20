@@ -12,6 +12,9 @@ their limitations are recorded in `doc/Equipo11_Propuesta_v4_hito2.docx` and
 - `a621359` README filename fix.
 - `ef669c7` `/onboard`, `doc/` marked read-only evidence, README status corrected.
 - `2866a29` proposal v4, parameter justification, slides v2; private audio ignored.
+- `docs/results/data-overview/` describes the corpus: 20 videos, 10,505 comments,
+  binary depth, 83.5 % single-comment threads, and a 150-row reference that covers
+  one video with 65 labelled rows.
 - `.venv` has numpy/pandas/scipy/scikit-learn/spaCy + `es_core_news_sm` +
   sentence-transformers (torch 2.15 CPU). `pytest` 1 passed, `ruff check .` clean.
 
