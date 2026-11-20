@@ -171,3 +171,56 @@ def bootstrap_difference(
         f1_b = compute_metrics(gold_sample, b_sample, undetected).f1_label
         differences.append(f1_a - f1_b)
     return tuple(float(value) for value in np.percentile(differences, [2.5, 97.5]))
+
+
+def replay_systems(
+    predictions: pd.DataFrame,
+    margins: Mapping[tuple[int, str], float],
+    undetected_by_seed: Mapping[int, int],
+) -> pd.DataFrame:
+    """Return the six system rows for each seed."""
+    rows = []
+    for seed, group in predictions.groupby("semilla", sort=True):
+        n_undetected = undetected_by_seed.get(seed, 0)
+        for system in ("B0", "B1", "M1", "M2"):
+            metrics = compute_metrics(group["oro"], group[system], n_undetected)
+            rows.append(
+                {
+                    "sistema": system,
+                    "semilla": seed,
+                    "F1_etiqueta": metrics.f1_label,
+                    "F1_uso_discursivo": metrics.f1_discourse,
+                    "F1_macro_CON_OP": metrics.f1_macro,
+                    "precision_etiqueta": metrics.precision,
+                    "cobertura_etiqueta": metrics.coverage,
+                    "abstencion": np.nan,
+                    "margen": np.nan,
+                }
+            )
+        for system, probability, flag in (
+            ("M1 con abstención", "p_M1", None),
+            ("M2 con abstención", "p_M2", "abstiene_M2"),
+        ):
+            margin = margins[(seed, system)]
+            if flag is None:
+                abstention = (group[probability] - 0.5).abs() < margin
+            else:
+                abstention = group[flag].astype(bool)
+            kept = group[~abstention]
+            metrics = compute_metrics(
+                kept["oro"], kept[system.replace(" con abstención", "")], n_undetected
+            )
+            rows.append(
+                {
+                    "sistema": system,
+                    "semilla": seed,
+                    "F1_etiqueta": metrics.f1_label,
+                    "F1_uso_discursivo": metrics.f1_discourse,
+                    "F1_macro_CON_OP": metrics.f1_macro,
+                    "precision_etiqueta": metrics.precision,
+                    "cobertura_etiqueta": metrics.coverage,
+                    "abstencion": float(abstention.mean()),
+                    "margen": margin,
+                }
+            )
+    return pd.DataFrame(rows)

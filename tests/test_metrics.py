@@ -7,6 +7,7 @@ from conectores.metrics import (
     NO,
     bootstrap_difference,
     compute_metrics,
+    replay_systems,
     undetected_labels,
 )
 
@@ -140,3 +141,60 @@ def test_bootstrap_deterministic():
     assert -1 <= first[0] <= 1
     assert -1 <= first[1] <= 1
     assert first != other
+
+
+def test_replay_systems_synthetic():
+    """Six systems for one seed, with a wrong B1 and no abstention."""
+    predictions = pd.DataFrame(
+        [
+            {
+                "semilla": 0,
+                "thread_id": "t1",
+                "oro": "CON:ADICIÓN",
+                "B0": "CON:ADICIÓN",
+                "B1": NO,
+                "M1": "CON:ADICIÓN",
+                "M2": "CON:ADICIÓN",
+                "p_M1": 0.9,
+                "p_M2": 0.9,
+                "abstiene_M2": False,
+            },
+            {
+                "semilla": 0,
+                "thread_id": "t2",
+                "oro": NO,
+                "B0": NO,
+                "B1": NO,
+                "M1": NO,
+                "M2": NO,
+                "p_M1": 0.1,
+                "p_M2": 0.1,
+                "abstiene_M2": False,
+            },
+        ]
+    )
+    margins = {(0, "M1 con abstención"): 0.1, (0, "M2 con abstención"): 0.15}
+
+    result = replay_systems(predictions, margins, {0: 0})
+
+    assert len(result) == 6
+    by_system = result.set_index("sistema")
+    assert list(by_system.index) == [
+        "B0",
+        "B1",
+        "M1",
+        "M2",
+        "M1 con abstención",
+        "M2 con abstención",
+    ]
+    assert by_system.loc["B0", "F1_etiqueta"] == pytest.approx(1.0)
+    assert by_system.loc["B0", "precision_etiqueta"] == pytest.approx(1.0)
+    assert by_system.loc["B0", "cobertura_etiqueta"] == pytest.approx(1.0)
+    assert by_system.loc["B1", "F1_etiqueta"] == pytest.approx(0.0)
+    assert by_system.loc["B1", "precision_etiqueta"] == pytest.approx(0.0)
+    assert by_system.loc["B1", "cobertura_etiqueta"] == pytest.approx(0.0)
+    assert by_system.loc["M2", "F1_etiqueta"] == pytest.approx(1.0)
+    assert by_system.loc["M1 con abstención", "abstencion"] == pytest.approx(0.0)
+    assert by_system.loc["M2 con abstención", "margen"] == pytest.approx(0.15)
+    assert pd.isna(by_system.loc["B0", "abstencion"])
+    assert pd.isna(by_system.loc["B0", "margen"])
