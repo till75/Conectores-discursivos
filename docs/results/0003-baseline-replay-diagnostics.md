@@ -29,6 +29,39 @@ with the team; until the team confirms it, treat it as provisional.
 comment when it is short, or the sentence containing the form when the comment
 is longer.
 
+### The two rules at a glance
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"darkMode": false, "primaryTextColor": "#000000", "secondaryTextColor": "#000000", "tertiaryTextColor": "#000000", "textColor": "#000000", "lineColor": "#334155", "edgeLabelBackground": "#ffffff", "clusterBkg": "#f8fafc", "clusterBorder": "#94a3b8"}}}%%
+flowchart TB
+  A["<span style='color:#000000'>Candidate occurrence<br/>form and gold label</span>"]
+  A -->|"<span style='color:#000000'>B0</span>"| B["<span style='color:#000000'>Look up the form<br/>in the listing</span>"]
+  A -->|"<span style='color:#000000'>B1</span>"| C["<span style='color:#000000'>Collect the form's rows<br/>in training</span>"]
+  B --> D{"<span style='color:#000000'>In the listing?</span>"}
+  D -->|"<span style='color:#000000'>yes</span>"| E["<span style='color:#000000'>Take the first label</span>"]
+  D -->|"<span style='color:#000000'>no</span>"| F["<span style='color:#000000'>Predict NO_DISCURSIVO</span>"]
+  C --> G{"<span style='color:#000000'>In training?</span>"}
+  G -->|"<span style='color:#000000'>yes</span>"| H["<span style='color:#000000'>Count the gold labels</span>"]
+  H --> I{"<span style='color:#000000'>Tie?</span>"}
+  I -->|"<span style='color:#000000'>yes</span>"| J["<span style='color:#000000'>First occurrence</span>"]
+  I -->|"<span style='color:#000000'>no</span>"| K["<span style='color:#000000'>Most frequent label</span>"]
+  G -->|"<span style='color:#000000'>no</span>"| L["<span style='color:#000000'>Global training majority</span>"]
+  E --> M["<span style='color:#000000'>Predicted label</span>"]
+  F --> M
+  J --> M
+  K --> M
+  L --> M
+  classDef shared fill:#ffffff,stroke:#64748b,stroke-width:1px
+  classDef b0 fill:#ffffff,stroke:#1d4ed8,stroke-width:1px
+  classDef b1 fill:#ffffff,stroke:#b45309,stroke-width:1px
+  class A,M shared
+  class B,D,E,F b0
+  class C,G,H,I,J,K,L b1
+```
+
+B0 reads only the listing. B1 reads only the training gold labels. Neither
+reads the comment context. The blue path is B0; the amber path is B1.
+
 ### B0 — the listing's first label
 
 B0 does not look at the context or the gold label. It takes the first label
