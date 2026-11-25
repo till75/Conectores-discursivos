@@ -3,10 +3,35 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 import pandas as pd
 
-from conectores.candidates import NO
+from conectores.candidates import NO, CandidateSet
+from conectores.metrics import (
+    compare_tables,
+    compute_metrics,
+    count_undetected,
+    summary_systems,
+)
+
+METRIC_COLUMNS = [
+    "F1_etiqueta",
+    "F1_uso_discursivo",
+    "F1_macro_CON_OP",
+    "precision_etiqueta",
+    "cobertura_etiqueta",
+]
+
+
+@dataclass(frozen=True)
+class BaselineResult:
+    """The rebuilt baselines and their deviations from the published tables."""
+
+    predictions: pd.DataFrame
+    metrics: pd.DataFrame
+    summary: pd.DataFrame
+    deviations: list[str]
 
 
 def _require(frame: pd.DataFrame, columns: list[str], name: str) -> None:
@@ -145,3 +170,101 @@ def baseline_predictions(
     if not frames:
         return pd.DataFrame(columns=BASELINE_COLUMNS)
     return pd.concat(frames, ignore_index=True)[BASELINE_COLUMNS]
+
+
+def _format_key(keys: Sequence[str], key: Sequence[object]) -> str:
+    """Format a row key as ``semilla=0, comment_id=c1``."""
+    return ", ".join(
+        f"{name}={value}" for name, value in zip(keys, key, strict=True)
+    )
+
+
+def _compare_predictions(
+    rebuilt: pd.DataFrame, published: pd.DataFrame
+) -> list[str]:
+    """Return one named deviation per missing row or changed prediction."""
+    keys = ["semilla", "comment_id", "unidad", "inicio"]
+    values = ["oro", "B0", "B1"]
+    merged = rebuilt.merge(
+        published,
+        on=keys,
+        how="outer",
+        suffixes=("_replay", "_published"),
+        indicator=True,
+    )
+    deviations = []
+    for _, row in merged.iterrows():
+        key = _format_key(keys, tuple(row[column] for column in keys))
+        if row["_merge"] == "left_only":
+            deviations.append(f"{key}: missing from published")
+            continue
+        if row["_merge"] == "right_only":
+            deviations.append(f"{key}: missing from replay")
+            continue
+        for column in values:
+            actual = row[f"{column}_replay"]
+            expected = row[f"{column}_published"]
+            if actual != expected:
+                deviations.append(
+                    f"{key}, {column}: replay {actual!r} != published {expected!r}"
+                )
+    return deviations
+
+
+def replay_baselines(
+    candidate_set: CandidateSet,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+    published: Mapping[str, pd.DataFrame],
+) -> BaselineResult:
+    """Rebuild B0 and B1 and compare them with the published tables."""
+    predictions = baseline_predictions(
+        candidate_set.candidates, reference, listing, test_ids
+    )
+    totals, _ = count_undetected(candidate_set.undetected, reference, test_ids)
+    rows = []
+    for seed, group in predictions.groupby("semilla", sort=True):
+        for system in ("B0", "B1"):
+            metrics = compute_metrics(
+                group["oro"], group[system], totals.get(int(seed), 0)
+            )
+            rows.append(
+                {
+                    "sistema": system,
+                    "semilla": int(seed),
+                    "F1_etiqueta": metrics.f1_label,
+                    "F1_uso_discursivo": metrics.f1_discourse,
+                    "F1_macro_CON_OP": metrics.f1_macro,
+                    "precision_etiqueta": metrics.precision,
+                    "cobertura_etiqueta": metrics.coverage,
+                    "abstencion": float("nan"),
+                    "margen": float("nan"),
+                }
+            )
+    metrics_frame = pd.DataFrame(
+        rows,
+        columns=["sistema", "semilla", *METRIC_COLUMNS, "abstencion", "margen"],
+    )
+    summary = summary_systems(metrics_frame)
+
+    deviations = []
+    published_predictions = published.get("predictions")
+    if published_predictions is not None and not published_predictions.empty:
+        deviations.extend(_compare_predictions(predictions, published_predictions))
+    published_systems = published.get("systems")
+    if published_systems is not None and not published_systems.empty:
+        filtered = published_systems[published_systems["sistema"].isin(["B0", "B1"])]
+        deviations.extend(
+            compare_tables(metrics_frame, filtered, ["sistema", "semilla"])
+        )
+    published_summary = published.get("summary")
+    if published_summary is not None and not published_summary.empty:
+        filtered = published_summary[published_summary["sistema"].isin(["B0", "B1"])]
+        deviations.extend(compare_tables(summary, filtered, ["sistema"]))
+    return BaselineResult(
+        predictions=predictions,
+        metrics=metrics_frame,
+        summary=summary,
+        deviations=deviations,
+    )

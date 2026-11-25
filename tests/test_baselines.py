@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 import conectores.baselines as baselines
+from conectores.candidates import CandidateSet
 
 
 def _listing(*rows):
@@ -304,3 +305,68 @@ def test_baseline_predictions_requires_columns():
             baselines.baseline_predictions(
                 candidates, reference, listing.drop(columns=[column]), {0: ["c1"]}
             )
+
+
+def _candidate_set(candidates):
+    """Wrap a candidate frame with the empty S2 diagnostics the replay needs."""
+    return CandidateSet(
+        candidates=candidates,
+        undetected=pd.DataFrame(
+            columns=["comment_id", "thread_id", "unidad", "oro"]
+        ),
+        csl_excluded=pd.DataFrame(),
+        second_pieces=pd.DataFrame(),
+        raw_matches=0,
+    )
+
+
+def test_replay_baselines_reports_deviations():
+    """A matching published set passes; a perturbed prediction and metric fail."""
+    candidates, reference, listing = _candidates_fixture()
+    candidate_set = _candidate_set(candidates)
+    test_ids = {0: ["c1"], 1: ["c3"]}
+
+    base = baselines.replay_baselines(
+        candidate_set, reference, listing, test_ids, {}
+    )
+
+    assert base.deviations == []
+    assert len(base.predictions) == 3
+    assert len(base.metrics) == 4
+    assert len(base.summary) == 2
+
+    published = {
+        "predictions": base.predictions.copy(),
+        "systems": base.metrics.copy(),
+        "summary": base.summary.copy(),
+    }
+    assert (
+        baselines.replay_baselines(
+            candidate_set, reference, listing, test_ids, published
+        ).deviations
+        == []
+    )
+
+    published["predictions"].loc[0, "B0"] = "CON:ADICIÓN"
+    published["systems"].loc[0, "F1_etiqueta"] += 0.01
+    deviations = baselines.replay_baselines(
+        candidate_set, reference, listing, test_ids, published
+    ).deviations
+
+    assert any("B0" in deviation for deviation in deviations)
+    assert any("F1_etiqueta" in deviation for deviation in deviations)
+
+
+def test_baseline_output_has_no_text():
+    """The prediction frame drops context and carries no name mention."""
+    candidates, reference, listing = _candidates_fixture()
+    candidates = candidates.assign(texto="hola @name", ventana="[[ya]] @name")
+
+    result = baselines.baseline_predictions(
+        candidates, reference, listing, {0: ["c1"]}
+    )
+
+    assert "texto" not in result.columns
+    assert "ventana" not in result.columns
+    assert "author_hash" not in result.columns
+    assert not any("@" in str(value) for value in result.to_numpy().ravel())
