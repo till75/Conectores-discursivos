@@ -110,6 +110,18 @@ form itself is never used to choose its label.
 | S1 and S2 stay green | Full suite and slow suite | pass |
 | Real-data tests are slow and skip without the ignored inputs | `pytest -m slow` runs seven tests; the module skip condition covers the four inputs | pass |
 
+## What was built
+
+`src/conectores/baselines.py` holds the listing label map, B0's first-label
+rule, B1's training-majority rule with the first-occurrence tie-break and the
+global fallback, the per-seed prediction frame, and the replay that adds the
+metric rows, the summary and the deviations. `tests/test_baselines.py` covers
+the unit behaviours with synthetic fixtures. `tests/test_integration.py` gains
+two slow tests against the frozen pilot data. The unit behaviours were driven by
+failing tests. The integration tests were written after the replay matched the
+real data; they are regression guards for the end-to-end contract, not
+failing-first tests. The S1 and S2 tests remain in the suite and stay green.
+
 ## Verification commands
 
 | Command | Result |
