@@ -4,11 +4,10 @@ Anotación automática de conectores y operadores discursivos (Fuentes Rodrígue
 2009) en comentarios de YouTube en español de Chile, para el Fondecyt 11260185.
 
 **Estado:** el piloto está hecho y sus resultados viven en el notebook de Colab
-dentro de `doc/`. El repositorio ya reproduce la tabla publicada de métricas y
-reconstruye las 273 candidatas desde la referencia y el listado; los sistemas
-B0, B1, M1 y M2 todavía viven sólo en el notebook y se reimplementan por slices.
-Se empieza por entender (`/onboard`) y reproducir, no por escribir un modelo
-nuevo.
+dentro de `doc/`. El repositorio ya reproduce la tabla publicada de métricas,
+reconstruye las 273 candidatas y reimplementa los baselines B0 y B1; M1 y M2
+todavía viven sólo en el notebook y se reimplementan por slices. Se empieza por
+entender (`/onboard`) y reproducir, no por escribir un modelo nuevo.
 
 ## El problema
 

@@ -2,9 +2,9 @@
 
 **Slice:** S3 — baseline replay
 **Date:** 2026-11-25
-**Status:** in progress — worked examples added at spec approval; pass/fail evidence and decision pending
+**Status:** pass
 **Spec:** [0003-baseline-replay.md](../specs/0003-baseline-replay.md)
-**Commits:** pending
+**Commits:** `42231a3..f1b410b`, plus the final docs commit
 **Report owner:** Till
 
 ## Intended goal
@@ -94,32 +94,119 @@ form itself is never used to choose its label.
 
 ## Pass/fail criteria
 
-To be completed after the TDD cycles.
+| Criterion | Evidence | Result |
+|---|---|---|
+| The listing map has 614 forms, 548 with one label and 66 with two to six | `test_listing_label_branches`, `test_listing_label_map_collapses_and_orders`; real-data count | pass |
+| The four label rules and the missing-value boundary are correct | `test_listing_label_branches` | pass |
+| B0 takes the first listing label and ignores context and gold | `test_b0_predict_first_label_and_unseen` | pass |
+| B0 falls back to `NO_DISCURSIVO` for an unseen form | `test_b0_predict_first_label_and_unseen` | pass |
+| B1 takes the training majority; a tie goes to the first occurrence | `test_b1_predict_most_frequent`, `test_b1_predict_tie_uses_first_occurrence` | pass |
+| B1 falls back to the global training majority for an unseen form, with the same tie-break | `test_b1_predict_global_tie_uses_first_occurrence` | pass |
+| Test rows come from the frozen test threads, training is the complement, unknown IDs are ignored | `test_baseline_predictions_uses_reference_threads` | pass |
+| The rebuilt predictions match all 439 published rows, 65/97/92/124/61 per seed | `test_baselines_match_published_predictions` (slow); real-data run has zero left-only, zero right-only and zero value mismatches | pass |
+| The ten per-seed rows and the two summary rows match at three decimals | `test_baselines_match_published_metrics` (slow); real-data run reports zero deviations | pass |
+| The metrics use the S2 undetected counts 5/3/4/8/4 | The replay passes `count_undetected` totals into `compute_metrics`; changing them moves the rows | pass |
+| The prediction frame has no text, context, author hash or name mention | `test_baseline_output_has_no_text`; real-data frame has eight columns and zero `@` | pass |
+| S1 and S2 stay green | Full suite and slow suite | pass |
+| Real-data tests are slow and skip without the ignored inputs | `pytest -m slow` runs seven tests; the module skip condition covers the four inputs | pass |
 
 ## Verification commands
 
-To be completed after the TDD cycles.
+| Command | Result |
+|---|---|
+| `.\.venv\Scripts\python.exe -m pytest` | 52 passed, 7 deselected |
+| `.\.venv\Scripts\python.exe -m ruff check .` | All checks passed |
+| `.\.venv\Scripts\python.exe -m pytest -m slow` | 7 passed, 52 deselected |
+| Real-data B0/B1 replay | 439 predictions, 10 metric rows, 2 summary rows, zero deviations |
 
 ## Diagnostic evidence
 
-To be completed after the TDD cycles.
+The replay runs on seeds 0–4. Each seed uses its own frozen test split and
+hash. The test comments are resolved to threads through the reference; the
+training rows are every candidate outside those threads. No thread crosses the
+split.
+
+| Seed | Test comments | Test threads | Candidates | Undetected | B0 F1 | B1 F1 | Frozen hash |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 0 | 31 | 19 | 65 | 5 | 0.360 | 0.444 | `009f6a053441d892ac8e5ecc752245db5d75b1e83596302f00ae00c2af5842de` |
+| 1 | 29 | 19 | 97 | 3 | 0.293 | 0.229 | `dbfa9e5b70c79cc22560af49ce191bde88ac0d7bf077556fe420fa58a13a001a` |
+| 2 | 29 | 19 | 92 | 4 | 0.305 | 0.278 | `fe6a51c6f6625b97e20899be09e841a8427db6fddc13846dc884ee4e46c35ecc` |
+| 3 | 37 | 19 | 124 | 8 | 0.275 | 0.267 | `c72d5e4a14172e81d11417163f047e5c3adbe124d977f71ec240c0cc1776922a` |
+| 4 | 26 | 19 | 61 | 4 | 0.341 | 0.424 | `e479487d20b218e88226ebc5ae09b848031ebbf60cdf7c9da351c2ae17181d63` |
+
+The published summary means, reproduced by the replay to three decimals:
+
+| System | F1 label | F1 discourse use | Macro CON/OP | Precision | Coverage |
+|---|---:|---:|---:|---:|---:|
+| B0 | 0.315 | 0.388 | 0.433 | 0.207 | 0.666 |
+| B1 | 0.328 | 0.471 | 0.493 | 0.572 | 0.236 |
+
+The prediction comparison covers `(semilla, comment_id, unidad, inicio)` and
+the `oro`, `B0` and `B1` values. It reports zero left-only rows, zero right-only
+rows and zero value mismatches. The 439 appearances are 256 unique candidates
+seen in at least one test split; the 17 candidates that never enter a test split
+are outside the B0/B1 evaluation.
+
+B1's fallback path is exercised: the test splits contain 11, 18, 14, 21 and 14
+unseen forms for seeds 0–4. The global training majority is `NO_DISCURSIVO` in
+all five seeds, so an unseen form predicts `NO_DISCURSIVO`. The tie-break is
+also exercised: seed 0 has ties for `entonces` and `igual`, seed 2 for `bueno`,
+and seeds 3 and 4 for `igual`; the first-occurrence rule reproduces every
+published row.
+
+No model result is produced by this slice, so abstention, the bootstrap
+intervals and the listing-versus-model category split are not applicable here.
+S1's values for those fields are unchanged and still reproduce.
 
 ## Privacy check
 
-Apart from the six fragments in the documented exception above, this slice
-writes no comment text. The prediction frame carries IDs, forms, offsets, gold
-labels and B0/B1; it carries no `texto`, `ventana`, `author_hash` or `@name`.
-The integration test reads the ignored `doc/` inputs and writes only to
-`tmp_path`.
+The prediction frame has 439 rows and eight columns: seed, IDs, thread, form,
+offset, gold label, B0 and B1. It has no `texto`, no `ventana` and no
+`author_hash`. A real-data scan of every prediction cell finds zero `@name`
+mentions. The slice writes no prediction file: the integration test reads the
+ignored `doc/` inputs and writes only to `tmp_path`. Unit fixtures are synthetic
+strings.
+
+Apart from the six fragments in the documented exception above, the committed
+tree contains no comment text, context window or `author_hash`. The exception is
+limited to this report; the code, tests, CLI output and other artifacts still
+carry no comment text. The six fragments contain no `@name` mention and no
+`author_hash`.
 
 ## Limitations and caveats
 
-To be completed after the TDD cycles.
+- B1's tie-break is a choice, not a measured fact. The pilot covers it in four
+  tied units across the five seeds, and the first-occurrence rule reproduces
+  every published row; an unseen tie is not proven by the pilot.
+- The global fallback is `NO_DISCURSIVO` because the negatives are the majority
+  in every training split. The rule is the training majority; a future corpus
+  with a different majority would change the fallback.
+- B0's first-label rule is the baseline's intended weakness: 66 listing forms
+  have two to six labels, and B0 always takes the first. The examples above show
+  the resulting false positive and two category errors.
+- The 17 candidates that never enter a test split are outside the B0/B1
+  evaluation. The 209 implicit negatives remain a protocol assumption; the
+  20-candidate audit is still deferred.
+- The summary comparison uses three decimals, so unrounded differences below
+  0.0005 are invisible. The published `resumen_sistemas.csv` has a two-row
+  header; the integration test flattens it and does not change the artifact.
+- The slice has no CLI or file writer. It exposes functions and this report.
+- The six worked examples are real fragments under the documented exception;
+  they are not a precedent for other artifacts.
 
 ## Decision
 
-To be completed after the TDD cycles.
+**Pass.** B0 and B1 are rebuilt from the S2 candidates, the listing and the
+frozen splits, with 439 predictions, ten per-seed metric rows and two summary
+rows matching the published tables and zero deviations. The S1 replay and the
+S2 candidate counts remain green. The baseline floor is now reproducible.
 
 ## Follow-up
 
-To be completed after the TDD cycles.
+1. S4 — M1 replay: build the window, punctuation and position features, fit the
+   two-step logistic regression, and learn the abstention margin inside training
+   only.
+2. Keep B0/B1 as the published floor for the M1 and M2 comparisons.
+3. The team should confirm or revoke the two documentation-only privacy
+   exceptions for the S2 and S3 reports.
+4. The 20-candidate implicit-negative audit remains deferred.
