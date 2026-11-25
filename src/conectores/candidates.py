@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 import pandas as pd
@@ -249,3 +250,31 @@ def build_candidates(
         ),
         raw_matches=raw_matches,
     )
+
+
+def public_candidates(candidates: pd.DataFrame) -> pd.DataFrame:
+    """Return the candidate frame without the private context columns."""
+    private = {"texto", "ventana"}
+    return candidates[
+        [column for column in candidates.columns if column not in private]
+    ].copy()
+
+
+def seed_candidate_counts(
+    candidates: pd.DataFrame,
+    reference: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+) -> dict[int, int]:
+    """Count the candidates in each seed's frozen test threads."""
+    comment_to_thread = dict(
+        zip(reference["comment_id"], reference["thread_id"], strict=True)
+    )
+    counts = {}
+    for seed, ids in test_ids.items():
+        threads = {
+            comment_to_thread[comment_id]
+            for comment_id in ids
+            if comment_id in comment_to_thread
+        }
+        counts[int(seed)] = int(candidates["thread_id"].isin(threads).sum())
+    return counts

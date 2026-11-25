@@ -232,6 +232,65 @@ def test_build_candidates_empty_listing():
     assert list(result.undetected["oro"]) == ["CON:ADICIÓN", "NO_DISCURSIVO"]
 
 
+def test_public_candidates_drops_text():
+    """The public view drops the private context but keeps the candidate fields."""
+    reference = _reference(("c1", "t1", "[ya::CON:ADICIÓN], además."))
+    result = candidates.build_candidates(reference, _listing("ya"), _empty_csl())
+
+    public = candidates.public_candidates(result.candidates)
+
+    assert "texto" not in public.columns
+    assert "ventana" not in public.columns
+    assert {
+        "comment_id",
+        "thread_id",
+        "is_reply",
+        "unidad",
+        "inicio",
+        "oro",
+        "coma_antes",
+        "coma_despues",
+        "inicio_comentario",
+        "inicio_oracion",
+        "fin_enunciado",
+    } <= set(public.columns)
+    assert "texto" in result.candidates.columns
+    assert public is not result.candidates
+
+
+def test_candidate_output_has_no_text():
+    """The public view carries no context, no author hash and no name mention."""
+    reference = _reference(("c1", "t1", "[ya::CON:ADICIÓN] hola"))
+    result = candidates.build_candidates(reference, _listing("ya"), _empty_csl())
+
+    public = candidates.public_candidates(result.candidates)
+
+    assert "texto" not in public.columns
+    assert "ventana" not in public.columns
+    assert "author_hash" not in public.columns
+    assert not any("@" in str(value) for value in public.to_numpy().ravel())
+
+
+def test_seed_candidate_counts_uses_reference_threads():
+    """Test IDs resolve through the reference; unknown IDs are ignored."""
+    reference = _reference(
+        ("c1", "t1", "[ya::CON:ADICIÓN]"),
+        ("c2", "t1", "[no::NO_DISCURSIVO]"),
+        ("c3", "t2", "[ya::CON:ADICIÓN]"),
+    )
+    result = candidates.build_candidates(
+        reference, _listing("ya", "no"), _empty_csl()
+    )
+
+    counts = candidates.seed_candidate_counts(
+        result.candidates,
+        reference,
+        {0: ["c1"], 1: ["c1", "c2"], 2: ["c3"], 3: ["missing"], 4: []},
+    )
+
+    assert counts == {0: 2, 1: 2, 2: 1, 3: 0, 4: 0}
+
+
 def test_build_candidates_requires_columns():
     """Every required column is named in the error that its absence raises."""
     reference = _reference(("c1", "t1", "[ya::CON:ADICIÓN]"))
