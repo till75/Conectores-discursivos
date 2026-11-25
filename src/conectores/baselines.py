@@ -71,3 +71,25 @@ def b0_predict(
     """Label each test row with the first listing label for its form."""
     _require(test, ["unidad"], "test")
     return [labels.get(form, [NO])[0] for form in test["unidad"]]
+
+
+def _majority(values: pd.Series) -> str:
+    """Return the most frequent label, breaking ties by first occurrence."""
+    counts = values.value_counts()
+    top = counts.iloc[0]
+    tied = set(counts[counts == top].index)
+    return next(label for label in values if label in tied)
+
+
+def b1_predict(train: pd.DataFrame, test: pd.DataFrame) -> list[str]:
+    """Label each test row with the form's most frequent training label."""
+    _require(train, ["unidad", "oro"], "train")
+    _require(test, ["unidad", "oro"], "test")
+    if train.empty:
+        raise ValueError("train is empty")
+    majority = {
+        form: _majority(group["oro"])
+        for form, group in train.groupby("unidad", sort=False)
+    }
+    global_label = _majority(train["oro"])
+    return [majority.get(form, global_label) for form in test["unidad"]]
