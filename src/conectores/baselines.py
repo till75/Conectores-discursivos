@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+
 import pandas as pd
+
+from conectores.candidates import NO
 
 
 def _require(frame: pd.DataFrame, columns: list[str], name: str) -> None:
@@ -59,3 +63,11 @@ def listing_label_map(listing: pd.DataFrame) -> dict[str, list[str]]:
         if label not in bucket:
             bucket.append(label)
     return labels
+
+
+def b0_predict(
+    test: pd.DataFrame, labels: Mapping[str, Sequence[str]]
+) -> list[str]:
+    """Label each test row with the first listing label for its form."""
+    _require(test, ["unidad"], "test")
+    return [labels.get(form, [NO])[0] for form in test["unidad"]]

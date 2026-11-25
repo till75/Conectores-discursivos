@@ -70,3 +70,30 @@ def test_listing_label_map_requires_columns():
             ValueError, match=f"listing is missing required column: {column}"
         ):
             baselines.listing_label_map(listing.drop(columns=[column]))
+
+
+def test_b0_predict_first_label_and_unseen():
+    """B0 takes the first listing label and falls back to NO for an unseen form."""
+    test = pd.DataFrame(
+        {
+            "unidad": ["ya", "bueno", "nuevo"],
+            "oro": ["NO_DISCURSIVO", "OP:MODAL", "OP:MODAL"],
+            "texto": ["context one", "context two", "context three"],
+        }
+    )
+    labels = {
+        "ya": ["OP:MODAL"],
+        "bueno": ["CON:CONTINUATIVO", "CON:CIERRE", "OP:MODAL"],
+    }
+
+    assert baselines.b0_predict(test, labels) == [
+        "OP:MODAL",
+        "CON:CONTINUATIVO",
+        "NO_DISCURSIVO",
+    ]
+
+
+def test_b0_predict_requires_unidad():
+    """B0 names the missing test column."""
+    with pytest.raises(ValueError, match="test is missing required column: unidad"):
+        baselines.b0_predict(pd.DataFrame({"oro": []}), {})
