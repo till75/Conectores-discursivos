@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from conectores.baselines import replay_baselines
 from conectores.candidates import (
     NO,
     build_candidates,
@@ -175,6 +176,83 @@ def test_candidates_match_published_predictions(tmp_path):
 
     totals, _ = count_undetected(result.undetected, reference, test_ids)
     assert totals == {0: 5, 1: 3, 2: 4, 3: 8, 4: 4}
+
+
+def _read_summary(path: Path) -> pd.DataFrame:
+    """Read the published summary with its two-row header."""
+    frame = pd.read_csv(path, header=[0, 1])
+    frame.columns = [
+        "sistema" if str(first).startswith("Unnamed") else f"{first}_{second}"
+        for first, second in frame.columns
+    ]
+    return frame[frame["sistema"] != "sistema"].reset_index(drop=True)
+
+
+def _baseline_inputs(tmp_path: Path):
+    """Load the frozen inputs and the five test splits."""
+    publicable = _extract_publicable(tmp_path)
+    reference = pd.read_csv(REFERENCE)
+    listing = pd.read_csv(LISTING)
+    csl = pd.read_csv(CSL)
+    candidate_set = build_candidates(reference, listing, csl)
+    test_ids = {}
+    for path in sorted((publicable / "test_congelado").glob("test_semilla*.txt")):
+        seed = int(path.stem.split("_")[-1].replace("semilla", ""))
+        test_ids[seed] = path.read_text(encoding="utf-8").split()
+    return publicable, reference, listing, candidate_set, test_ids
+
+
+def test_baselines_match_published_predictions(tmp_path):
+    """The rebuilt B0/B1 columns match all 439 published test rows."""
+    publicable, reference, listing, candidate_set, test_ids = _baseline_inputs(
+        tmp_path
+    )
+    predictions = pd.read_csv(publicable / "predicciones_test.csv")
+
+    result = replay_baselines(
+        candidate_set,
+        reference,
+        listing,
+        test_ids,
+        {"predictions": predictions},
+    )
+
+    assert result.deviations == []
+    assert len(result.predictions) == 439
+    assert result.predictions.groupby("semilla").size().to_dict() == {
+        0: 65,
+        1: 97,
+        2: 92,
+        3: 124,
+        4: 61,
+    }
+
+
+def test_baselines_match_published_metrics(tmp_path):
+    """The ten per-seed rows and the two summary rows match to three decimals."""
+    publicable, reference, listing, candidate_set, test_ids = _baseline_inputs(
+        tmp_path
+    )
+    systems = pd.read_csv(publicable / "resultados_semillas.csv")
+    summary = _read_summary(publicable / "resumen_sistemas.csv")
+
+    result = replay_baselines(
+        candidate_set,
+        reference,
+        listing,
+        test_ids,
+        {"systems": systems, "summary": summary},
+    )
+
+    assert result.deviations == []
+    assert len(result.metrics) == 10
+    assert len(result.summary) == 2
+    b0 = result.summary[result.summary["sistema"] == "B0"].iloc[0]
+    b1 = result.summary[result.summary["sistema"] == "B1"].iloc[0]
+    assert round(b0["F1_etiqueta_mean"], 3) == 0.315
+    assert round(b1["F1_etiqueta_mean"], 3) == 0.328
+    assert round(b0["cobertura_etiqueta_mean"], 3) == 0.666
+    assert round(b1["precision_etiqueta_mean"], 3) == 0.572
 
 
 def test_replay_perturbed_cell_fails(tmp_path):
