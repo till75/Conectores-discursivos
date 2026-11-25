@@ -21,7 +21,7 @@ S2 candidate replay is complete and passes. The repository can rebuild the 273 c
 
 ## Gotchas
 - Use `.\.venv\Scripts\python.exe`; do not rely on global Python.
-- `doc/` is read-only evidence and its corpora are gitignored; never copy comment text, context windows or `author_hash` into the repo.
+- `doc/` is read-only evidence and its corpora are gitignored. Do not copy comment text, context windows or `author_hash` into the repo, with one documented exception: the eight short fragments in `docs/results/0002-candidate-replay-diagnostics.md`, granted by Till on 2026-11-25 and pending team review. The exception does not extend to any other artifact.
 - Slow tests need `doc/resultados_hito2.zip` and are excluded by default.
 - S2 target counts are fixed (284/8/3/273/64/209/16/614); a mismatch is a bug, not a tuning problem.
 - `public_candidates` is the only outward candidate view; `texto` and `ventana` stay in memory.

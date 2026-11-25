@@ -96,6 +96,85 @@ No model result is produced by this slice, so abstention, coverage, the
 bootstrap intervals and the listing-versus-model category split are not
 applicable here. S1's values for those fields are unchanged and still reproduce.
 
+## Worked examples
+
+**Privacy exception (documentation only).** Till granted an exception on
+2026-11-25 to reproduce the eight short fragments below so that the candidate
+categories can be understood. The exception is limited to this report. It does
+not change R5 for the corpus, the application data, the code, the tests, the
+commit messages or any other artifact. The fragments contain no `@name` mention
+and no `author_hash`. Till will raise the exception with the team; until the
+team confirms it, treat it as provisional.
+
+`[[...]]` marks the piece under discussion; `<<...>>` marks a skipped second
+piece. Each block quotes the whole comment when it is short, or the sentence
+containing the unit when the comment is longer.
+
+1. **614 forms — one form from the listing inventory, shown in use.**
+
+   > [[Bueno]], si hubieran dejado dinero quizás esto no estaría pasando
+
+   The listing rows `bueno 4`, `bueno 2`, `bueno 1`, `bueno 3` and `bueno 5`
+   all collapse to the single normalised form `bueno`. The 614 are distinct
+   forms, not occurrences.
+
+2. **284 raw matches — a regex match before any exclusion.**
+
+   > Estoy [[de acuerdo]]... los pago.
+
+   This match survives as a candidate. The 284 also include the matches that
+   become the 8 CSL exclusions and the 3 second pieces.
+
+3. **8 CSL exclusions — a match dropped inside a semi-free construction.**
+
+   > [[No]], si boric lo hizo perfecto 😂😂😂😂
+
+   The match `No` is inside the CSL zone `No, si`, so it is recorded as an
+   exclusion and never becomes a candidate.
+
+4. **3 second pieces — a match skipped because its unit was already claimed.**
+
+   > Es lo [[más]] <<lógico>>, ya que las alzas deben ser graduales.
+
+   The reference unit is `lo más lógico`. `[[más]]` became the candidate with
+   gold label `OP:MODAL`; `<<lógico>>` is the second piece and was skipped.
+
+5. **273 candidates — a surviving match.**
+
+   > Esto [[definitivamente]] es una bomba de tiempo para que reviente. 😡
+
+   Gold label: `OP:ENUNCIATIVO`.
+
+6. **64 positives — a candidate whose gold label is a discourse label.**
+
+   > A andar en bicicleta [[nomás]]
+
+   Gold label: `OP:ARGUMENTATIVO`.
+
+7. **209 negatives — a candidate labelled `NO_DISCURSIVO`.**
+
+   > Kast, [[ya]] estás hundido!
+
+   Gold label: `NO_DISCURSIVO`. Here no reference span overlaps the match, so
+   it is one of the implicit negatives that the protocol assumes were reviewed
+   and rejected.
+
+8. **16 undetected labels — a reference span the listing never matches.**
+
+   > [[Wataca]], devuelve la plata
+
+   Gold label: `CON:INTERACTIVO`. Because the listing has no form that matches
+   it, it never becomes a candidate; it is reported only as an undetected
+   label.
+
+The arithmetic behind the examples:
+
+- `284 = 273 + 8 + 3`: raw matches split into candidates, CSL exclusions and
+  second pieces.
+- `273 = 64 + 209`: candidates split into positives and negatives.
+- The 16 undetected labels sit outside the 273: they are reference spans, not
+  matches.
+
 ## Privacy check
 
 `public_candidates` returns 273 rows and 11 columns: IDs, thread, reply flag,
@@ -103,8 +182,13 @@ form, offset, gold label and the five position flags. It has no `texto`, no
 `ventana` and no `author_hash`. A real-data scan of every public cell finds zero
 `@name` mentions. The slice writes no candidate file: the integration test
 reads the ignored `doc/` inputs and writes only to `tmp_path`. Unit fixtures are
-synthetic strings. The committed tree contains no comment text, context window
-or `author_hash`.
+synthetic strings.
+
+Apart from the eight fragments in the documented exception above, the committed
+tree contains no comment text, context window or `author_hash`. The exception is
+limited to this report: the public view, the tests, the CLI output and the other
+artifacts still carry no comment text. The eight fragments contain no `@name`
+mention and no `author_hash`.
 
 ## Limitations and caveats
 
