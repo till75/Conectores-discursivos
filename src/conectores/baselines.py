@@ -93,3 +93,55 @@ def b1_predict(train: pd.DataFrame, test: pd.DataFrame) -> list[str]:
     }
     global_label = _majority(train["oro"])
     return [majority.get(form, global_label) for form in test["unidad"]]
+
+
+BASELINE_COLUMNS = [
+    "semilla",
+    "comment_id",
+    "thread_id",
+    "unidad",
+    "inicio",
+    "oro",
+    "B0",
+    "B1",
+]
+
+
+def baseline_predictions(
+    candidates: pd.DataFrame,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+) -> pd.DataFrame:
+    """Return B0 and B1 for every test candidate in each frozen split."""
+    _require(
+        candidates,
+        ["comment_id", "thread_id", "unidad", "oro", "inicio"],
+        "candidates",
+    )
+    _require(reference, ["comment_id", "thread_id"], "reference")
+    labels = listing_label_map(listing)
+    comment_to_thread = dict(
+        zip(reference["comment_id"], reference["thread_id"], strict=True)
+    )
+    frames = []
+    for seed, ids in test_ids.items():
+        threads = {
+            comment_to_thread[comment_id]
+            for comment_id in ids
+            if comment_id in comment_to_thread
+        }
+        test = candidates[candidates["thread_id"].isin(threads)]
+        train = candidates[~candidates["thread_id"].isin(threads)]
+        if test.empty:
+            continue
+        frames.append(
+            test.assign(
+                semilla=int(seed),
+                B0=b0_predict(test, labels),
+                B1=b1_predict(train, test),
+            )
+        )
+    if not frames:
+        return pd.DataFrame(columns=BASELINE_COLUMNS)
+    return pd.concat(frames, ignore_index=True)[BASELINE_COLUMNS]
