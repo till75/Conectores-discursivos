@@ -7,6 +7,34 @@ import re
 import pandas as pd
 
 LETRA = r"[\wáéíóúñÁÉÍÓÚÑü]"
+ETIQ = re.compile(r"\[([^\[\]]+?)::([^\[\]]+)\]")
+
+
+def normalise_label(label: str) -> str:
+    """Apply the project's label normalisation."""
+    label = label.strip().upper()
+    if label.startswith("CON:REFORMULATIVO"):
+        return "CON:REFORMULATIVOS"
+    return label.replace("CON:ORDENADOR:", "CON:").replace("CON:ORDENADORES:", "CON:")
+
+
+def read_annotation(
+    annotation: object,
+) -> tuple[str | None, list[tuple[int, int, str, str]]]:
+    """Return the plain text and the ``[unidad::ETIQUETA]`` spans."""
+    if not isinstance(annotation, str) or "::" not in annotation:
+        return None, []
+    plain, spans, pos = "", [], 0
+    for match in ETIQ.finditer(annotation):
+        plain += annotation[pos : match.start()]
+        start = len(plain)
+        plain += match.group(1)
+        spans.append(
+            (start, len(plain), match.group(1), normalise_label(match.group(2)))
+        )
+        pos = match.end()
+    plain += annotation[pos:]
+    return plain, spans
 
 
 def listing_forms(listing: pd.DataFrame) -> list[str]:
