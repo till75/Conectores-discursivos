@@ -1,8 +1,8 @@
 """Metric definitions for the metric-replay slice.
 
 The functions here reproduce the notebook's metric definitions without
-importing the notebook. The replay CLI and the candidate construction live in
-later slices.
+importing the notebook. Candidate construction lives in ``candidates.py``; this
+module keeps the S1 replay and its compatibility entry points.
 """
 
 from __future__ import annotations
@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,9 +17,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-NO = "NO_DISCURSIVO"
-LETRA = r"[\wáéíóúñÁÉÍÓÚÑü]"
-ETIQ = re.compile(r"\[([^\[\]]+?)::([^\[\]]+)\]")
+from conectores.candidates import NO, build_candidates
 
 
 @dataclass(frozen=True)
@@ -70,97 +67,21 @@ def compute_metrics(
     )
 
 
-def _normalise_label(label: str) -> str:
-    """Apply the project's label normalisation."""
-    label = label.strip().upper()
-    if label.startswith("CON:REFORMULATIVO"):
-        return "CON:REFORMULATIVOS"
-    return label.replace("CON:ORDENADOR:", "CON:").replace("CON:ORDENADORES:", "CON:")
-
-
-def _read_annotation(
-    annotation: object,
-) -> tuple[str | None, list[tuple[int, int, str, str]]]:
-    """Return the plain text and the ``[unidad::ETIQUETA]`` spans."""
-    if not isinstance(annotation, str) or "::" not in annotation:
-        return None, []
-    plain, spans, pos = "", [], 0
-    for match in ETIQ.finditer(annotation):
-        plain += annotation[pos : match.start()]
-        start = len(plain)
-        plain += match.group(1)
-        spans.append(
-            (start, len(plain), match.group(1), _normalise_label(match.group(2)))
-        )
-        pos = match.end()
-    plain += annotation[pos:]
-    return plain, spans
-
-
-def _listing_pattern(listing: pd.DataFrame) -> re.Pattern[str]:
-    """Build the case-insensitive, longest-first listing pattern."""
-    forms = (
-        listing["unidad"]
-        .astype(str)
-        .str.replace(r"\s*\d+$", "", regex=True)
-        .str.strip()
-        .str.lower()
-    )
-    forms = sorted(set(forms), key=len, reverse=True)
-    if not forms:
-        return re.compile(r"(?!)")
-    return re.compile(
-        rf"(?<!{LETRA})("
-        + "|".join(re.escape(form) for form in forms)
-        + rf")(?!{LETRA})",
-        re.I,
-    )
-
-
 def undetected_labels(
     reference: pd.DataFrame, listing: pd.DataFrame, csl: pd.DataFrame
 ) -> pd.DataFrame:
-    """Return the reference spans the listing never matches."""
-    csl_units = set()
-    if "unidad" in csl.columns:
-        csl_units = set(zip(csl["comment_id"], csl["unidad"], strict=True))
-    csl_ranges = []
-    if {"inicio", "fin"} <= set(csl.columns):
-        csl_ranges = list(
-            zip(csl["comment_id"], csl["inicio"], csl["fin"], strict=True)
-        )
-    pattern = _listing_pattern(listing)
-    rows = []
-    for row in reference.itertuples():
-        plain, spans = _read_annotation(row.anotacion)
-        if plain is None:
-            continue
-        spans = [
-            span
-            for span in spans
-            if (row.comment_id, span[2]) not in csl_units
-            and not any(
-                comment_id == row.comment_id
-                and inicio <= span[0]
-                and span[1] <= fin
-                for comment_id, inicio, fin in csl_ranges
-            )
-        ]
-        matches = [(match.start(), match.end()) for match in pattern.finditer(plain)]
-        for start, end, unit, label in spans:
-            if not any(
-                start < match_end and match_start < end
-                for match_start, match_end in matches
-            ):
-                rows.append(
-                    {
-                        "comment_id": row.comment_id,
-                        "thread_id": row.thread_id,
-                        "unidad": unit,
-                        "oro": label,
-                    }
-                )
-    return pd.DataFrame(rows, columns=["comment_id", "thread_id", "unidad", "oro"])
+    """Return the reference spans the listing never matches.
+
+    S1's compatibility entry point; the candidate builder is authoritative.
+    S1's undetected fixtures predate ``is_reply`` and ``text_normalized``, and
+    the undetected rows depend on neither, so the wrapper supplies neutral
+    values when the columns are absent.
+    """
+    if "is_reply" not in reference.columns:
+        reference = reference.assign(is_reply=False)
+    if "text_normalized" not in reference.columns:
+        reference = reference.assign(text_normalized="")
+    return build_candidates(reference, listing, csl).undetected
 
 
 def bootstrap_difference(

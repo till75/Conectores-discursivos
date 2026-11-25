@@ -6,6 +6,7 @@ import json
 import pandas as pd
 import pytest
 
+from conectores.candidates import build_candidates
 from conectores.metrics import (
     NO,
     ReplayResult,
@@ -96,6 +97,63 @@ def test_undetected_labels_excludes_csl():
             "unidad": "ya",
             "oro": "CON:ADICIÓN",
         }
+    ]
+
+
+def test_metrics_undetected_labels_uses_builder():
+    """The compatibility wrapper returns the builder's undetected rows."""
+    reference = pd.DataFrame(
+        [
+            {
+                "comment_id": "c1",
+                "thread_id": "t1",
+                "is_reply": False,
+                "text_normalized": "",
+                "anotacion": "[ya::CON:ADICIÓN] [no::NO_DISCURSIVO]",
+            },
+            {
+                "comment_id": "c2",
+                "thread_id": "t2",
+                "is_reply": False,
+                "text_normalized": "ya no",
+                "anotacion": "Sin etiquetas",
+            },
+            {
+                "comment_id": "c3",
+                "thread_id": "t3",
+                "is_reply": False,
+                "text_normalized": "",
+                "anotacion": "[Dale::OP:MODAL]",
+            },
+            {
+                "comment_id": "c4",
+                "thread_id": "t4",
+                "is_reply": False,
+                "text_normalized": "",
+                "anotacion": "[a b::CON:ADICIÓN][cd::OP:MODAL]",
+            },
+        ]
+    )
+    listing = pd.DataFrame({"unidad": ["ya", "a", "bcd"]})
+    csl = pd.DataFrame({"comment_id": ["c3"], "unidad": ["Dale"]})
+
+    expected = build_candidates(reference, listing, csl).undetected
+    result = undetected_labels(reference, listing, csl)
+
+    pd.testing.assert_frame_equal(result, expected)
+    assert result.to_dict("records") == [
+        {
+            "comment_id": "c1",
+            "thread_id": "t1",
+            "unidad": "no",
+            "oro": "NO_DISCURSIVO",
+        },
+        {
+            "comment_id": "c4",
+            "thread_id": "t4",
+            "unidad": "cd",
+            "oro": "OP:MODAL",
+        },
     ]
 
 

@@ -97,7 +97,9 @@ def _require(frame: pd.DataFrame, columns: list[str], name: str) -> None:
 
 def _csl_zone_test(csl: pd.DataFrame):
     """Return a predicate for the reference spans excluded as CSL zones."""
-    pairs = set(zip(csl["comment_id"], csl["unidad"], strict=True))
+    pairs = set()
+    if "unidad" in csl.columns:
+        pairs = set(zip(csl["comment_id"], csl["unidad"], strict=True))
     ranges = []
     if {"inicio", "fin"} <= set(csl.columns):
         ranges = list(zip(csl["comment_id"], csl["inicio"], csl["fin"], strict=True))
@@ -125,7 +127,10 @@ def build_candidates(
         "reference",
     )
     _require(listing, ["unidad"], "listing")
-    _require(csl, ["comment_id", "unidad"], "csl")
+    _require(csl, ["comment_id"], "csl")
+    has_positions = {"inicio", "fin"} <= set(csl.columns)
+    if "unidad" not in csl.columns and not has_positions:
+        raise ValueError("csl is missing required column: unidad")
 
     pattern = listing_pattern(listing)
     is_zone = _csl_zone_test(csl)
