@@ -1,7 +1,7 @@
 # State — 2026-11-26
 
 ## Where we are
-S3 baseline replay is complete and passes. The repository can rebuild the 273 candidates (S2) and the B0/B1 baselines (S3) from the reference, the listing and the frozen splits without reading the published predictions. S1 metric replay and S2 remain green. S4 M1 replay is in `/learn`: the concept notes are in `docs/learn/`, the prototype reproduces the published M1, and the A/B/C choice is pending.
+S3 baseline replay is complete and passes. The repository can rebuild the 273 candidates (S2) and the B0/B1 baselines (S3) from the reference, the listing and the frozen splits without reading the published predictions. S1 metric replay and S2 remain green. S4 M1 replay has completed `/learn`: the concept notes are in `docs/learn/`, the prototype reproduces the published M1, and the author chose approach A (faithful port with the frozen embeddings). The design note is written; `/spec` is next.
 
 ## Done since last handoff
 - S2 candidate replay: `335ffab..5eca0ad`; `docs/specs/0002-candidate-replay.md`, `docs/design/0002-candidate-replay.md`, `docs/results/0002-candidate-replay-diagnostics.md`.
@@ -14,12 +14,12 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 - Published B0/B1 reproduced exactly: 439 predictions (65/97/92/124/61), ten per-seed rows and two summary rows with zero deviations. Summary F1 label: B0 0.315, B1 0.328.
 - `pytest -q`: 52 passed, 7 deselected; `pytest -m slow`: 7 passed, 52 deselected; `ruff check .` clean.
 - S4 `/learn` notes extracted to `docs/learn/` with an index: candidate window and six flags, TF-IDF, 384-dimensional window embeddings, plus links to the S2/S3 worked examples. The S4 prototype reproduces the published M1 exactly with embeddings (0/439 label mismatches, max probability difference 3.6e-7) and fails without them (62/439 mismatches).
+- S4 design note `docs/design/0004-m1-replay.md`: approach A, faithful port with the frozen embeddings; linked from the plan and the learn index.
 
 ## Next
-1. Finish S4 `/learn`: the author chooses approach A (faithful port with embeddings), B (no embeddings) or C (replay published probabilities).
-2. `/spec` and `/spec-review` for S4: window features, punctuation, position, embeddings, the two-step logistic regression and the margin learned by grouped CV inside training.
-3. Replay M1 per seed and match the published rows and summary at three decimals.
-4. Write `docs/results/0004-m1-replay-diagnostics.md` and commit final docs.
+1. `/spec` and `/spec-review` for S4: window features, punctuation, position, embeddings, the two-step logistic regression and the margin learned by grouped CV inside training.
+2. Replay M1 per seed and match the published rows and summary at three decimals.
+3. Write `docs/results/0004-m1-replay-diagnostics.md` and commit final docs.
 
 ## Open questions
 - S4: `inicio_oracion` treats a newline as a sentence boundary. Phrases can span lines; the group should decide whether to keep the frozen rule or change it. A change alters M1/M2 and needs an ADR.
@@ -41,3 +41,4 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 - `undetected_labels` supplies neutral `is_reply`/`text_normalized` values for S1 fixtures that predate those columns; the undetected rows depend on neither.
 - S3 reads the frozen `test_semillaN.txt` files by thread instead of rerunning `GroupShuffleSplit`; the frozen files are the split contract.
 - S3's B1 tie-break is first occurrence in training order, not pandas' implicit `value_counts` order; the explicit rule reproduces all five seeds.
+- S4 chooses the faithful port with the frozen embeddings; dropping them would change the published M1 and needs an ADR.

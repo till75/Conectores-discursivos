@@ -14,6 +14,9 @@ the authority; these pages are the teaching material.
 | [S3 — B0 versus B1](../results/0003-baseline-replay-diagnostics.md#the-two-rules-at-a-glance) | The baseline flowchart and six worked examples. | S3 |
 | [S2 — Candidate categories](../results/0002-candidate-replay-diagnostics.md#worked-examples) | One real example of each candidate count. | S2 |
 
+The S4 approach choice is recorded in
+[design note 0004](../design/0004-m1-replay.md).
+
 ## How to use these notes
 
 Read the note for the concept you are about to specify or review. The note

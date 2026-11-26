@@ -60,6 +60,8 @@ published B0 and B1 rows.
 
 ### S4 — M1 replay
 
+**Design note:** [0004 — M1 replay](design/0004-m1-replay.md).
+
 **Why:** M1 is the trained model behind both M1 and M2. Reproducing it proves
 the features and the training protocol before the rules are added.
 
