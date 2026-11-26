@@ -1,9 +1,9 @@
 # Spec 0004 — M1 replay
 
 **Slice:** S4 — M1 replay
-**Status:** proposed
+**Status:** approved
 **Date:** 2026-11-26
-**Approved:** pending
+**Approved:** 2026-11-26 by Till
 **Design note:** [0004-m1-replay.md](../design/0004-m1-replay.md)
 **Requirements source:** `docs/00-brief.md`, `docs/plan.md`,
 `doc/equipo11_B0_B1_M1_M2.ipynb`, `doc/resultados_hito2.zip`, `gate.toml`,
@@ -432,23 +432,25 @@ diagnostic report. About 900 lines.
 
 ## Approval
 
-**Approved:** pending. `/spec-review` produces the one-page packet and records
-the approval here.
+**Approved:** 2026-11-26 by Till.
 
-**Decisions for the review:**
+**Approved decisions (A, B, C as specified):**
 
-1. The split into `features.py` and `models.py`, with `FeatureBuilder`,
-   `M1Model`, `choose_margin`, `m1_predictions`, `replay_m1` and `M1Result`.
-2. The exact feature order and settings: three TF-IDF blocks, six flags,
-   384-column embedding; fit on training only; step 1 balanced, step 2
-   unweighted; `C=1.0`, `max_iter=2000`.
-3. The margin protocol: five-fold `GroupKFold` by thread, grid
-   `0.00..0.30` by `0.05`, 20% cap, smallest margin on ties, training only.
-4. The comparison gate: 439 labels exact, `p_M1` within `1e-5`, ten per-seed
-   rows and two summary rows at three decimals.
-5. Keep the frozen newline rule; the change is an open question and needs an
-   ADR.
-6. No CLI and no changes to `candidates.py`, `metrics.py` or `baselines.py`.
+1. **Feature/model split and exact feature order (A).** `features.py` holds
+   `FeatureBuilder` with the three TF-IDF blocks, the six flags and the
+   384-column embedding, fitted on training only; `models.py` holds `M1Model`,
+   `choose_margin`, `m1_predictions`, `replay_m1` and `M1Result`. The feature
+   order and settings are as specified: word, character, unit, six flags,
+   embedding; step 1 balanced, step 2 unweighted; `C=1.0`, `max_iter=2000`.
+2. **Margin protocol (B).** Five-fold `GroupKFold` by thread on training, grid
+   `0.00..0.30` by `0.05`, a 20% cap, and the smallest margin on ties. The test
+   split is never used.
+3. **Comparison gate (C).** All 439 labels exact, `p_M1` within `1e-5`, and all
+   five metrics per seed plus both summary columns at three decimals.
+
+The frozen `inicio_oracion` newline rule is kept; changing it is an open
+question and needs an ADR. There is no CLI and no change to `candidates.py`,
+`metrics.py` or `baselines.py`.
 
 **Assumptions:**
 
@@ -467,4 +469,4 @@ the approval here.
 - A CLI or file writer.
 - The newline-rule change and the 20-candidate audit.
 
-Next: /spec-review S4.
+Next: /tdd FeatureBuilder.

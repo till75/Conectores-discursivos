@@ -1,7 +1,7 @@
 # State — 2026-11-26
 
 ## Where we are
-S3 baseline replay is complete and passes. The repository can rebuild the 273 candidates (S2) and the B0/B1 baselines (S3) from the reference, the listing and the frozen splits without reading the published predictions. S1 metric replay and S2 remain green. S4 M1 replay has completed `/learn`: the concept notes are in `docs/learn/`, the prototype reproduces the published M1, and the author chose approach A (faithful port with the frozen embeddings). The design note is written; `/spec` is next.
+S3 baseline replay is complete and passes. The repository can rebuild the 273 candidates (S2) and the B0/B1 baselines (S3) from the reference, the listing and the frozen splits without reading the published predictions. S1 metric replay and S2 remain green. S4 M1 replay has completed `/learn` and `/spec-review`: approach A (faithful port with the frozen embeddings) is chosen and the spec is approved. TDD is next.
 
 ## Done since last handoff
 - S2 candidate replay: `335ffab..5eca0ad`; `docs/specs/0002-candidate-replay.md`, `docs/design/0002-candidate-replay.md`, `docs/results/0002-candidate-replay-diagnostics.md`.
@@ -15,11 +15,14 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 - `pytest -q`: 52 passed, 7 deselected; `pytest -m slow`: 7 passed, 52 deselected; `ruff check .` clean.
 - S4 `/learn` notes extracted to `docs/learn/` with an index: candidate window and six flags, TF-IDF, 384-dimensional window embeddings, plus links to the S2/S3 worked examples. The S4 prototype reproduces the published M1 exactly with embeddings (0/439 label mismatches, max probability difference 3.6e-7) and fails without them (62/439 mismatches).
 - S4 design note `docs/design/0004-m1-replay.md`: approach A, faithful port with the frozen embeddings; linked from the plan and the learn index.
+- S4 spec approved 2026-11-26 (`docs/specs/0004-m1-replay.md`): decisions A, B and C recorded; no code or tests written yet.
 
 ## Next
-1. `/spec` and `/spec-review` for S4: window features, punctuation, position, embeddings, the two-step logistic regression and the margin learned by grouped CV inside training.
-2. Replay M1 per seed and match the published rows and summary at three decimals.
-3. Write `docs/results/0004-m1-replay-diagnostics.md` and commit final docs.
+1. `/tdd FeatureBuilder`: the three TF-IDF blocks, six flags, 384-column embedding, fit on training only.
+2. `/tdd M1Model` and `choose_margin`: two-step fit, allowed labels, grouped-CV margin.
+3. `/tdd m1_predictions` and `replay_m1`: split, metrics, summary, deviations.
+4. Add slow integration tests for the 439 labels, probabilities within 1e-5 and the ten plus two rows.
+5. Complete `docs/results/0004-m1-replay-diagnostics.md` and commit final docs.
 
 ## Open questions
 - S4: `inicio_oracion` treats a newline as a sentence boundary. Phrases can span lines; the group should decide whether to keep the frozen rule or change it. A change alters M1/M2 and needs an ADR.
@@ -31,6 +34,7 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 - Slow tests need `doc/resultados_hito2.zip` and are excluded by default.
 - S2 target counts are fixed (284/8/3/273/64/209/16/614); a mismatch is a bug, not a tuning problem.
 - S3 targets are fixed (439 predictions, 65/97/92/124/61, ten per-seed rows and two summary rows, zero deviations); a mismatch is a bug, not a tuning problem.
+- S4 targets are fixed (439 labels exact, `p_M1` within 1e-5, ten per-seed rows and two summary rows, margins 0.10/0.10/0.10/0.05/0.15); a mismatch is a bug, not a tuning problem.
 - `public_candidates` is the only outward candidate view; `texto` and `ventana` stay in memory.
 - B1 ties go to the label that appears first in the training row order; the global fallback uses the same rule.
 - No `docs/adr/` exists; S2 and S3 needed no ADR. Protocol constants live in `gate.toml`.
