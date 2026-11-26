@@ -7,8 +7,14 @@ import pandas as pd
 import pytest
 
 from conectores import models
-from conectores.candidates import NO
-from conectores.models import M1Model, choose_margin, m1_predictions
+from conectores.candidates import NO, CandidateSet
+from conectores.metrics import compute_metrics
+from conectores.models import (
+    M1Model,
+    choose_margin,
+    m1_predictions,
+    replay_m1,
+)
 
 
 def _candidate(window, unit, gold):
@@ -377,6 +383,131 @@ def test_m1_predictions_all_empty():
         "abstiene",
         "M1_con_abstencion",
     ]
+
+
+def _candidate_set(candidates, undetected=None):
+    """Wrap candidates and undetected rows for the replay tests."""
+    if undetected is None:
+        undetected = pd.DataFrame(
+            columns=["comment_id", "thread_id", "unidad", "oro"]
+        )
+    return CandidateSet(
+        candidates=candidates,
+        undetected=undetected,
+        csl_excluded=pd.DataFrame(),
+        second_pieces=pd.DataFrame(),
+        raw_matches=0,
+    )
+
+
+def test_replay_m1_reports_zero_deviations():
+    """The rebuilt tables match themselves and carry the expected shape."""
+    candidates, reference, listing = _prediction_fixture()
+    candidate_set = _candidate_set(candidates)
+    test_ids = {0: ["c1"], 1: ["c2"]}
+
+    base = replay_m1(
+        candidate_set, reference, listing, test_ids, {}, _fake_embedder
+    )
+
+    assert len(base.predictions) == 6
+    assert len(base.metrics) == 4
+    assert len(base.summary) == 2
+    assert set(base.margins) == {0, 1}
+    assert base.deviations == []
+    m1_rows = base.metrics[base.metrics["sistema"] == "M1"]
+    assert m1_rows["abstencion"].isna().all()
+    assert m1_rows["margen"].isna().all()
+    abstention_rows = base.metrics[
+        base.metrics["sistema"] == "M1 con abstención"
+    ]
+    assert abstention_rows["margen"].notna().all()
+
+    published = {
+        "predictions": base.predictions.copy(),
+        "systems": base.metrics.copy(),
+        "summary": base.summary.copy(),
+    }
+    assert (
+        replay_m1(
+            candidate_set,
+            reference,
+            listing,
+            test_ids,
+            published,
+            _fake_embedder,
+        ).deviations
+        == []
+    )
+
+
+def test_replay_m1_reports_deviations():
+    """A changed label, probability, metric or summary cell is named."""
+    candidates, reference, listing = _prediction_fixture()
+    candidate_set = _candidate_set(candidates)
+    test_ids = {0: ["c1"], 1: ["c2"]}
+    base = replay_m1(
+        candidate_set, reference, listing, test_ids, {}, _fake_embedder
+    )
+    published = {
+        "predictions": base.predictions.copy(),
+        "systems": base.metrics.copy(),
+        "summary": base.summary.copy(),
+    }
+    published["predictions"].loc[0, "M1"] = "CON:CIERRE"
+    published["predictions"].loc[1, "p_M1"] = (
+        published["predictions"].loc[1, "p_M1"] - 1e-4
+    )
+    published["systems"].loc[0, "F1_etiqueta"] += 0.01
+    published["summary"].loc[0, "F1_etiqueta_mean"] += 0.01
+
+    deviations = replay_m1(
+        candidate_set, reference, listing, test_ids, published, _fake_embedder
+    ).deviations
+
+    assert any("M1" in deviation for deviation in deviations)
+    assert any("p_M1" in deviation for deviation in deviations)
+    assert any("F1_etiqueta" in deviation for deviation in deviations)
+    assert any("F1_etiqueta_mean" in deviation for deviation in deviations)
+
+
+def test_replay_m1_uses_undetected_counts():
+    """The metric rows use the undetected labels in the test threads."""
+    candidates, reference, listing = _prediction_fixture()
+    undetected = pd.DataFrame(
+        [
+            {
+                "comment_id": "c1",
+                "thread_id": "t1",
+                "unidad": "nueva",
+                "oro": "OP:MODAL",
+            }
+        ]
+    )
+    candidate_set = _candidate_set(candidates, undetected)
+
+    result = replay_m1(
+        candidate_set,
+        reference,
+        listing,
+        {0: ["c1"], 1: ["c2"]},
+        {},
+        _fake_embedder,
+    )
+
+    seed0 = result.predictions[result.predictions["semilla"] == 0]
+    expected0 = compute_metrics(seed0["oro"], seed0["M1"], 1)
+    row0 = result.metrics[
+        (result.metrics["sistema"] == "M1") & (result.metrics["semilla"] == 0)
+    ].iloc[0]
+    assert row0["F1_etiqueta"] == pytest.approx(expected0.f1_label)
+
+    seed1 = result.predictions[result.predictions["semilla"] == 1]
+    expected1 = compute_metrics(seed1["oro"], seed1["M1"], 0)
+    row1 = result.metrics[
+        (result.metrics["sistema"] == "M1") & (result.metrics["semilla"] == 1)
+    ].iloc[0]
+    assert row1["F1_etiqueta"] == pytest.approx(expected1.f1_label)
 
 
 def test_m1_predictions_requires_columns():
