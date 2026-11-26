@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GroupKFold
 
 from conectores.candidates import NO
 from conectores.features import Embedder, FeatureBuilder
@@ -104,3 +105,38 @@ class M1Model:
                 )
             )
         return out, probabilities, np.array(abstention)
+
+
+def choose_margin(
+    train: pd.DataFrame,
+    labels: Mapping[str, Sequence[str]],
+    embedder: Embedder,
+    seed: int = 0,
+    max_abstention: float = 0.2,
+) -> float:
+    """Return the margin chosen by grouped cross-validation on training."""
+    folds = GroupKFold(n_splits=5)
+    probabilities = np.zeros(len(train))
+    for fit_index, hold_index in folds.split(
+        train, groups=train["thread_id"]
+    ):
+        model = M1Model(labels, embedder, seed=seed).fit(train.iloc[fit_index])
+        probabilities[hold_index] = model.prob(train.iloc[hold_index])
+
+    truth = (train["oro"] != NO).to_numpy()
+    best_margin, best_f1 = 0.0, -1.0
+    for margin in np.arange(0, 0.31, 0.05):
+        keep = np.abs(probabilities - 0.5) >= margin
+        if 1 - keep.mean() > max_abstention or keep.sum() == 0:
+            continue
+        predicted = probabilities[keep] >= 0.5
+        kept_truth = truth[keep]
+        true_positives = int((predicted & kept_truth).sum())
+        f1 = (
+            0.0
+            if true_positives == 0
+            else 2 * true_positives / (predicted.sum() + kept_truth.sum())
+        )
+        if f1 > best_f1 + 1e-9:
+            best_margin, best_f1 = round(float(margin), 2), f1
+    return best_margin

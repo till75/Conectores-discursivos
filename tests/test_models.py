@@ -1,11 +1,14 @@
 """Unit tests for the M1 model."""
 
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
 
+from conectores import models
 from conectores.candidates import NO
-from conectores.models import M1Model
+from conectores.models import M1Model, choose_margin
 
 
 def _candidate(window, unit, gold):
@@ -176,3 +179,52 @@ def test_m1_requires_non_empty_training():
     """An empty training frame is rejected with a clear message."""
     with pytest.raises(ValueError, match="train is empty"):
         M1Model(LABELS, _fake_embedder).fit(_train().iloc[0:0])
+
+
+class _ProbModel:
+    """A model whose probability is the row's ``p`` column."""
+
+    def __init__(self, labels, embedder, seed=0):
+        self.labels = labels
+
+    def fit(self, train):
+        return self
+
+    def prob(self, df):
+        return df["p"].to_numpy()
+
+
+def _margin_train():
+    """Eleven rows where 0.05 and 0.10 tie, and 0.05 must win."""
+    rows = []
+    for index in range(11):
+        if index < 5:
+            gold, probability = "CON:ADICIÓN", 0.9
+        elif index < 9:
+            gold, probability = NO, 0.1
+        elif index == 9:
+            gold, probability = NO, 0.51
+        else:
+            gold, probability = NO, 0.45
+        rows.append(
+            {
+                "thread_id": f"t{index % 5}",
+                "oro": gold,
+                "p": probability,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def test_choose_margin_uses_training_only():
+    """The margin function has no test input."""
+    assert "test" not in inspect.signature(choose_margin).parameters
+
+
+def test_choose_margin_tie_keeps_smaller(monkeypatch):
+    """A tie between 0.05 and 0.10 keeps the smaller margin."""
+    monkeypatch.setattr(models, "M1Model", _ProbModel)
+
+    margin = choose_margin(_margin_train(), LABELS, _fake_embedder)
+
+    assert margin == 0.05
