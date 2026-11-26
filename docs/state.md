@@ -1,7 +1,7 @@
-# State — 2026-11-25
+# State — 2026-11-26
 
 ## Where we are
-S3 baseline replay is complete and passes. The repository can rebuild the 273 candidates (S2) and the B0/B1 baselines (S3) from the reference, the listing and the frozen splits without reading the published predictions. S1 metric replay and S2 remain green. S4 M1 replay is next and has not started.
+S3 baseline replay is complete and passes. The repository can rebuild the 273 candidates (S2) and the B0/B1 baselines (S3) from the reference, the listing and the frozen splits without reading the published predictions. S1 metric replay and S2 remain green. S4 M1 replay is in `/learn`: the concept notes are in `docs/learn/`, the prototype reproduces the published M1, and the A/B/C choice is pending.
 
 ## Done since last handoff
 - S2 candidate replay: `335ffab..5eca0ad`; `docs/specs/0002-candidate-replay.md`, `docs/design/0002-candidate-replay.md`, `docs/results/0002-candidate-replay-diagnostics.md`.
@@ -13,9 +13,10 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 - `baselines.py` builds the listing label map (614 forms, 548/66), B0's first-label rule, B1's training-majority rule with first-occurrence ties and the global fallback, the per-seed predictions, the metrics and the summary.
 - Published B0/B1 reproduced exactly: 439 predictions (65/97/92/124/61), ten per-seed rows and two summary rows with zero deviations. Summary F1 label: B0 0.315, B1 0.328.
 - `pytest -q`: 52 passed, 7 deselected; `pytest -m slow`: 7 passed, 52 deselected; `ruff check .` clean.
+- S4 `/learn` notes extracted to `docs/learn/` with an index: candidate window and six flags, TF-IDF, 384-dimensional window embeddings, plus links to the S2/S3 worked examples. The S4 prototype reproduces the published M1 exactly with embeddings (0/439 label mismatches, max probability difference 3.6e-7) and fails without them (62/439 mismatches).
 
 ## Next
-1. `/learn` S4 M1 replay if needed (the plan marks `/learn` as yes).
+1. Finish S4 `/learn`: the author chooses approach A (faithful port with embeddings), B (no embeddings) or C (replay published probabilities).
 2. `/spec` and `/spec-review` for S4: window features, punctuation, position, embeddings, the two-step logistic regression and the margin learned by grouped CV inside training.
 3. Replay M1 per seed and match the published rows and summary at three decimals.
 4. Write `docs/results/0004-m1-replay-diagnostics.md` and commit final docs.
@@ -26,7 +27,7 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 
 ## Gotchas
 - Use `.\.venv\Scripts\python.exe`; do not rely on global Python.
-- `doc/` is read-only evidence and its corpora are gitignored. Do not copy comment text, context windows or `author_hash` into the repo, with two documented exceptions granted by Till on 2026-11-25 and pending team review: the eight short fragments in `docs/results/0002-candidate-replay-diagnostics.md` and the six short fragments in `docs/results/0003-baseline-replay-diagnostics.md`. The exceptions do not extend to any other artifact.
+- `doc/` is read-only evidence and its corpora are gitignored. Do not copy comment text, context windows or `author_hash` into the repo, with three documented exceptions requested by Till on 2026-11-25/26 and pending team review: the eight short fragments in `docs/results/0002-candidate-replay-diagnostics.md`, the six short fragments in `docs/results/0003-baseline-replay-diagnostics.md`, and the teaching fragments in `docs/learn/`. The exceptions do not extend to any other artifact.
 - Slow tests need `doc/resultados_hito2.zip` and are excluded by default.
 - S2 target counts are fixed (284/8/3/273/64/209/16/614); a mismatch is a bug, not a tuning problem.
 - S3 targets are fixed (439 predictions, 65/97/92/124/61, ten per-seed rows and two summary rows, zero deviations); a mismatch is a bug, not a tuning problem.

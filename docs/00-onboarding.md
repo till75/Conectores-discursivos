@@ -190,6 +190,7 @@ flowchart TB
 | `docs/research/local-llm-annotation.md` | Future work: a local open LLM as a measured teacher. |
 | `docs/adr/` | Decisions that change what a result means. |
 | `docs/design/` | Design notes from `/learn`. |
+| `docs/learn/` | Concept notes from `/learn`: window, TF-IDF, embeddings. |
 | `docs/specs/` | Contracts from `/spec`. |
 | `docs/results/` | Slice diagnostic reports. |
 | `src/conectores/` | Package code. Empty beyond the version string. |
@@ -263,7 +264,8 @@ flowchart TB
 
 ## 9. Next
 
-The first slice should be chosen by the author. The recommended order is:
+The current slice order is in [`docs/plan.md`](plan.md) and the live handoff is
+in [`docs/state.md`](state.md). The original recommended order was:
 
 - **A — Metric replay.** Reimplement the published table from
   `predicciones_test.csv` with no model. This gives a trusted yardstick and
@@ -280,5 +282,19 @@ The first slice should be chosen by the author. The recommended order is:
 
 Slice A is the cheaper yardstick. Slice B is the more direct reimplementation.
 The author picks.
+
+## 10. Going deeper
+
+The [`docs/learn/`](learn/README.md) folder holds the concept notes from the
+`/learn` sessions:
+
+- [Candidate window and the six flags](learn/01-candidate-window.md)
+- [TF-IDF](learn/02-tf-idf.md)
+- [Window embeddings](learn/03-window-embeddings.md)
+- [B0 versus B1](results/0003-baseline-replay-diagnostics.md#the-two-rules-at-a-glance)
+- [Candidate categories](results/0002-candidate-replay-diagnostics.md#worked-examples)
+
+The spec and the slice report remain the contract and the evidence; the notes
+explain.
 
 Next: `/learn <slice>`.

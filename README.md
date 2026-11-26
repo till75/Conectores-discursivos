@@ -57,6 +57,7 @@ doc/                     material de origen (propuesta, guion, notebooks, corpus
 src/conectores/          paquete Python
 tests/                   pruebas (pytest)
 docs/                    brief, plan, ADRs, notas de diseño, specs y resultados
+docs/learn/              notas de enseñanza de conceptos (/learn)
 docs/results/            informe de diagnóstico de cada slice y artefactos
 .opencode/commands/      comandos del flujo de trabajo (/learn, /spec, /tdd, ...)
 gate.toml                parámetros congelados del protocolo de evaluación
