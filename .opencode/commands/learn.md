@@ -27,6 +27,16 @@ settled and introduces no new concept, say so and hand off to `/spec`.
 6. **Write a one-page design note** at `docs/design/NNNN-<slug>.md` using
    `docs/design/0000-template.md`. Record the chosen approach and the reason.
    Keep the note to one page; the spec holds the contract.
-7. **Escalate policy.** If the choice changes what a result means or whether
+7. **Preserve and link the teaching material.** Do not leave explanations,
+   examples, diagrams or worked calculations only in the chat. Save the material
+   the author will need again under `docs/learn/` (one concept per note, with
+   `docs/learn/README.md` as the index) or in the folder that owns it. Link the
+   new note from the index, then update the existing material that should point
+   to it — onboarding, the README structure, the state note, the relevant design
+   note, spec or report — so the content is discoverable from more than one
+   place. Keep the contract in the spec and the evidence in the report; the
+   teaching note explains. If the material contains real comment text, record
+   the author's documentation-only exception and its scope.
+8. **Escalate policy.** If the choice changes what a result means or whether
    runs are comparable, write or supersede an ADR before `/spec`.
-8. **Hand off.** Finish with `Next: /spec <slice>.` Do not ask for approval here.
+9. **Hand off.** Finish with `Next: /spec <slice>.` Do not ask for approval here.
