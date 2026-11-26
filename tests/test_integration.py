@@ -19,7 +19,9 @@ from conectores.candidates import (
     listing_forms,
     seed_candidate_counts,
 )
+from conectores.features import sentence_embedder
 from conectores.metrics import count_undetected, main
+from conectores.models import replay_m1
 
 DOC = Path(__file__).resolve().parents[1] / "doc"
 ZIP = DOC / "resultados_hito2.zip"
@@ -253,6 +255,89 @@ def test_baselines_match_published_metrics(tmp_path):
     assert round(b1["F1_etiqueta_mean"], 3) == 0.328
     assert round(b0["cobertura_etiqueta_mean"], 3) == 0.666
     assert round(b1["precision_etiqueta_mean"], 3) == 0.572
+
+
+@pytest.fixture(scope="module")
+def m1_replay(tmp_path_factory):
+    """Rebuild M1 once with the real frozen model and the published tables."""
+    tmp_path = tmp_path_factory.mktemp("m1")
+    publicable, reference, listing, candidate_set, test_ids = _baseline_inputs(
+        tmp_path
+    )
+    published = {
+        "predictions": pd.read_csv(publicable / "predicciones_test.csv"),
+        "systems": pd.read_csv(publicable / "resultados_semillas.csv"),
+        "summary": _read_summary(publicable / "resumen_sistemas.csv"),
+    }
+    try:
+        embedder = sentence_embedder()
+    except Exception as exc:
+        pytest.skip(f"frozen embedding model unavailable: {exc}")
+    return replay_m1(
+        candidate_set, reference, listing, test_ids, published, embedder
+    )
+
+
+def test_m1_matches_published_predictions(m1_replay):
+    """The rebuilt M1 labels and probabilities match the 439 published rows."""
+    result = m1_replay
+
+    assert result.deviations == []
+    assert len(result.predictions) == 439
+    assert result.predictions.groupby("semilla").size().to_dict() == {
+        0: 65,
+        1: 97,
+        2: 92,
+        3: 124,
+        4: 61,
+    }
+    assert set(result.margins) == {0, 1, 2, 3, 4}
+    for seed, expected in {0: 0.10, 1: 0.10, 2: 0.10, 3: 0.05, 4: 0.15}.items():
+        assert result.margins[seed] == pytest.approx(expected)
+    assert not any("p_M1" in deviation for deviation in result.deviations)
+
+
+def test_m1_matches_published_metrics(m1_replay):
+    """The ten per-seed rows and two summary rows match to three decimals."""
+    result = m1_replay
+
+    assert result.deviations == []
+    assert len(result.metrics) == 10
+    assert len(result.summary) == 2
+    m1_rows = result.metrics[result.metrics["sistema"] == "M1"].reset_index(
+        drop=True
+    )
+    abstention_rows = result.metrics[
+        result.metrics["sistema"] == "M1 con abstención"
+    ].reset_index(drop=True)
+    assert list(m1_rows["F1_etiqueta"].round(3)) == [
+        0.333,
+        0.267,
+        0.261,
+        0.426,
+        0.513,
+    ]
+    assert list(abstention_rows["F1_etiqueta"].round(3)) == [
+        0.400,
+        0.294,
+        0.308,
+        0.448,
+        0.522,
+    ]
+    expected_abstention = [0.169231, 0.154639, 0.086957, 0.040323, 0.262295]
+    for row, expected in zip(
+        abstention_rows.itertuples(), expected_abstention, strict=True
+    ):
+        assert row.margen == pytest.approx(
+            {0: 0.10, 1: 0.10, 2: 0.10, 3: 0.05, 4: 0.15}[row.semilla]
+        )
+        assert row.abstencion == pytest.approx(expected, abs=1e-5)
+    m1_summary = result.summary[result.summary["sistema"] == "M1"].iloc[0]
+    abstention_summary = result.summary[
+        result.summary["sistema"] == "M1 con abstención"
+    ].iloc[0]
+    assert round(m1_summary["F1_etiqueta_mean"], 3) == 0.360
+    assert round(abstention_summary["F1_etiqueta_mean"], 3) == 0.394
 
 
 def test_replay_perturbed_cell_fails(tmp_path):
