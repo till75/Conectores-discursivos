@@ -19,7 +19,30 @@ RASGOS = [
     "fin_enunciado",
     "is_reply",
 ]
+EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 EMBEDDING_DIM = 384
+
+
+def sentence_embedder(model_name: str = EMBEDDING_MODEL) -> Embedder:
+    """Return a callable that encodes windows with the frozen model."""
+    from sentence_transformers import SentenceTransformer
+
+    model = SentenceTransformer(model_name, device="cpu")
+    cache: dict[str, np.ndarray] = {}
+
+    def embed(texts: Sequence[str]) -> np.ndarray:
+        new_texts = [
+            text for text in dict.fromkeys(texts) if text not in cache
+        ]
+        if new_texts:
+            vectors = model.encode(
+                new_texts, batch_size=64, show_progress_bar=False
+            )
+            for text, vector in zip(new_texts, vectors, strict=True):
+                cache[text] = vector
+        return np.vstack([cache[text] for text in texts])
+
+    return embed
 
 
 def _require(frame: pd.DataFrame, columns: list[str]) -> None:

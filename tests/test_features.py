@@ -1,10 +1,18 @@
-"""Unit tests for the M1 feature builder."""
+"""Unit tests for the M1 feature builder and the frozen embedder."""
+
+import sys
+import types
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from conectores.features import RASGOS, FeatureBuilder
+from conectores.features import (
+    EMBEDDING_MODEL,
+    RASGOS,
+    FeatureBuilder,
+    sentence_embedder,
+)
 
 
 def _frame():
@@ -108,3 +116,71 @@ def test_feature_builder_requires_columns():
             ValueError, match=f"candidates is missing required column: {column}"
         ):
             FeatureBuilder().fit(train.drop(columns=[column]), _fake_embedder)
+
+
+def _fake_sentence_transformers(created):
+    """Build a fake sentence_transformers module for the wrapper tests."""
+
+    class FakeSentenceTransformer:
+        def __init__(self, model_name, device=None):
+            self.model_name = model_name
+            self.device = device
+            self.encoded = []
+            created.append(self)
+
+        def encode(self, texts, batch_size=64, show_progress_bar=False):
+            self.encoded.append(list(texts))
+            return np.vstack(
+                [np.full(384, float(index + 1)) for index in range(len(texts))]
+            )
+
+    return types.SimpleNamespace(SentenceTransformer=FakeSentenceTransformer)
+
+
+def test_sentence_embedder_caches_and_returns_384(monkeypatch):
+    """The wrapper caches by text and returns one 384-column row per input."""
+    created = []
+    monkeypatch.setitem(
+        sys.modules,
+        "sentence_transformers",
+        _fake_sentence_transformers(created),
+    )
+
+    embedder = sentence_embedder()
+    vectors = embedder(["alpha", "beta", "alpha"])
+
+    assert vectors.shape == (3, 384)
+    assert created[0].model_name == EMBEDDING_MODEL
+    assert created[0].device == "cpu"
+    assert created[0].encoded == [["alpha", "beta"]]
+    assert np.allclose(vectors[0], vectors[2])
+    assert not np.allclose(vectors[0], vectors[1])
+
+
+def test_sentence_embedder_accepts_a_model_name(monkeypatch):
+    """A custom model name is passed to the frozen-model constructor."""
+    created = []
+    monkeypatch.setitem(
+        sys.modules,
+        "sentence_transformers",
+        _fake_sentence_transformers(created),
+    )
+
+    sentence_embedder("fake-model")
+
+    assert created[0].model_name == "fake-model"
+
+
+@pytest.mark.slow
+def test_sentence_embedder_real_model():
+    """The real frozen model returns a finite 384-column matrix."""
+    pytest.importorskip("sentence_transformers")
+    try:
+        embedder = sentence_embedder()
+    except Exception as exc:
+        pytest.skip(f"frozen embedding model unavailable: {exc}")
+
+    vectors = embedder(["un contexto sintético", "otro contexto sintético"])
+
+    assert vectors.shape == (2, 384)
+    assert np.isfinite(vectors).all()
