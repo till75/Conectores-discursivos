@@ -9,15 +9,31 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GroupKFold
 
+from conectores.baselines import listing_label_map
 from conectores.candidates import NO
 from conectores.features import Embedder, FeatureBuilder
 
+M1_COLUMNS = [
+    "semilla",
+    "comment_id",
+    "thread_id",
+    "unidad",
+    "inicio",
+    "oro",
+    "M1",
+    "p_M1",
+    "abstiene",
+    "M1_con_abstencion",
+]
 
-def _require(frame: pd.DataFrame, columns: list[str]) -> None:
+
+def _require(
+    frame: pd.DataFrame, columns: list[str], name: str = "train"
+) -> None:
     """Raise when a required model column is absent."""
     for column in columns:
         if column not in frame.columns:
-            raise ValueError(f"train is missing required column: {column}")
+            raise ValueError(f"{name} is missing required column: {column}")
 
 
 class M1Model:
@@ -140,3 +156,54 @@ def choose_margin(
         if f1 > best_f1 + 1e-9:
             best_margin, best_f1 = round(float(margin), 2), f1
     return best_margin
+
+
+def m1_predictions(
+    candidates: pd.DataFrame,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+    embedder: Embedder,
+) -> pd.DataFrame:
+    """Return one M1 row per test candidate per frozen split."""
+    _require(
+        candidates,
+        ["comment_id", "thread_id", "unidad", "inicio", "oro"],
+        "candidates",
+    )
+    _require(reference, ["comment_id", "thread_id"], "reference")
+    labels = listing_label_map(listing)
+    comment_to_thread = dict(
+        zip(reference["comment_id"], reference["thread_id"], strict=True)
+    )
+    frames = []
+    for seed, ids in test_ids.items():
+        threads = {
+            comment_to_thread[comment_id]
+            for comment_id in ids
+            if comment_id in comment_to_thread
+        }
+        test = candidates[candidates["thread_id"].isin(threads)]
+        train = candidates[~candidates["thread_id"].isin(threads)]
+        if test.empty:
+            continue
+        model = M1Model(labels, embedder, seed=int(seed)).fit(train)
+        predicted, probabilities, _ = model.predict(test, 0.0)
+        margin = choose_margin(train, labels, embedder, seed=int(seed))
+        abstiene = np.abs(probabilities - 0.5) < margin
+        abstained_labels = [
+            NO if flag else label
+            for label, flag in zip(predicted, abstiene, strict=True)
+        ]
+        frames.append(
+            test.assign(
+                semilla=int(seed),
+                M1=predicted,
+                p_M1=probabilities,
+                abstiene=abstiene,
+                M1_con_abstencion=abstained_labels,
+            )
+        )
+    if not frames:
+        return pd.DataFrame(columns=M1_COLUMNS)
+    return pd.concat(frames, ignore_index=True)[M1_COLUMNS]

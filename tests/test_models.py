@@ -8,7 +8,7 @@ import pytest
 
 from conectores import models
 from conectores.candidates import NO
-from conectores.models import M1Model, choose_margin
+from conectores.models import M1Model, choose_margin, m1_predictions
 
 
 def _candidate(window, unit, gold):
@@ -228,3 +228,208 @@ def test_choose_margin_tie_keeps_smaller(monkeypatch):
     margin = choose_margin(_margin_train(), LABELS, _fake_embedder)
 
     assert margin == 0.05
+
+
+def _prediction_fixture():
+    """Six threads, each with one alpha, one beta and one gamma row."""
+    rows = []
+    for index in range(18):
+        thread = f"t{index % 6 + 1}"
+        kind = (index // 6) % 3
+        if kind == 0:
+            window, gold = "alpha context [[ya]]", "CON:ADICIÓN"
+        elif kind == 1:
+            window, gold = "beta context [[ya]]", "OP:MODAL"
+        else:
+            window, gold = "gamma context [[ya]]", NO
+        row = _candidate(window, "ya", gold)
+        row.update(
+            {
+                "comment_id": f"c{index + 1}",
+                "thread_id": thread,
+                "inicio": 0,
+            }
+        )
+        rows.append(row)
+    candidates = pd.DataFrame(rows)
+    reference = candidates[["comment_id", "thread_id"]].drop_duplicates()
+    listing = pd.DataFrame(
+        [
+            {
+                "unidad": "ya",
+                "macrofuncion": "Conector",
+                "categoria": "Adición",
+                "subcategoria": "─",
+            },
+            {
+                "unidad": "ya 2",
+                "macrofuncion": "Operador",
+                "categoria": "Modal",
+                "subcategoria": "─",
+            },
+        ]
+    )
+    return candidates, reference, listing
+
+
+def test_m1_predictions_uses_reference_threads():
+    """Test threads select rows; training is the complement."""
+    candidates, reference, listing = _prediction_fixture()
+
+    result = m1_predictions(
+        candidates,
+        reference,
+        listing,
+        {0: ["c1"], 1: ["c2"]},
+        _fake_embedder,
+    )
+
+    assert list(result.columns) == [
+        "semilla",
+        "comment_id",
+        "thread_id",
+        "unidad",
+        "inicio",
+        "oro",
+        "M1",
+        "p_M1",
+        "abstiene",
+        "M1_con_abstencion",
+    ]
+    assert result.groupby("semilla").size().to_dict() == {0: 3, 1: 3}
+    expected = {
+        (0, "c1"): "CON:ADICIÓN",
+        (0, "c7"): "OP:MODAL",
+        (0, "c13"): NO,
+        (1, "c2"): "CON:ADICIÓN",
+        (1, "c8"): "OP:MODAL",
+        (1, "c14"): NO,
+    }
+    records = result[["semilla", "comment_id", "M1"]].to_dict("records")
+    assert {
+        (record["semilla"], record["comment_id"]): record["M1"]
+        for record in records
+    } == expected
+    assert result["p_M1"].between(0, 1).all()
+    assert result["abstiene"].dtype == bool
+    abstained = result[result["abstiene"]]
+    assert (abstained["M1_con_abstencion"] == NO).all()
+    kept = result[~result["abstiene"]]
+    assert (kept["M1_con_abstencion"] == kept["M1"]).all()
+
+
+def test_m1_predictions_ignores_unknown_and_empty():
+    """Unknown IDs are ignored; an empty seed contributes no rows."""
+    candidates, reference, listing = _prediction_fixture()
+
+    result = m1_predictions(
+        candidates,
+        reference,
+        listing,
+        {0: ["c1", "missing"], 1: []},
+        _fake_embedder,
+    )
+
+    assert result.groupby("semilla").size().to_dict() == {0: 3}
+    assert set(result["comment_id"]) == {"c1", "c7", "c13"}
+
+
+def test_m1_predictions_excludes_test_threads_from_training(monkeypatch):
+    """No training frame, including CV folds, contains the test thread."""
+    candidates, reference, listing = _prediction_fixture()
+    captured = []
+
+    class _CaptureModel(M1Model):
+        def fit(self, train):
+            captured.append(set(train["thread_id"]))
+            return super().fit(train)
+
+    monkeypatch.setattr(models, "M1Model", _CaptureModel)
+
+    m1_predictions(candidates, reference, listing, {0: ["c1"]}, _fake_embedder)
+
+    assert captured
+    assert all("t1" not in threads for threads in captured)
+
+
+def test_m1_predictions_all_empty():
+    """No test threads returns an empty frame with the contract columns."""
+    candidates, reference, listing = _prediction_fixture()
+
+    result = m1_predictions(
+        candidates,
+        reference,
+        listing,
+        {0: ["missing"], 1: []},
+        _fake_embedder,
+    )
+
+    assert result.empty
+    assert list(result.columns) == [
+        "semilla",
+        "comment_id",
+        "thread_id",
+        "unidad",
+        "inicio",
+        "oro",
+        "M1",
+        "p_M1",
+        "abstiene",
+        "M1_con_abstencion",
+    ]
+
+
+def test_m1_predictions_requires_columns():
+    """Each missing input column names its frame."""
+    candidates, reference, listing = _prediction_fixture()
+
+    for column in ("comment_id", "thread_id", "unidad", "inicio", "oro"):
+        with pytest.raises(
+            ValueError, match=f"candidates is missing required column: {column}"
+        ):
+            m1_predictions(
+                candidates.drop(columns=[column]),
+                reference,
+                listing,
+                {0: ["c1"]},
+                _fake_embedder,
+            )
+
+    for column in ("comment_id", "thread_id"):
+        with pytest.raises(
+            ValueError, match=f"reference is missing required column: {column}"
+        ):
+            m1_predictions(
+                candidates,
+                reference.drop(columns=[column]),
+                listing,
+                {0: ["c1"]},
+                _fake_embedder,
+            )
+
+    for column in ("unidad", "macrofuncion", "categoria", "subcategoria"):
+        with pytest.raises(
+            ValueError, match=f"listing is missing required column: {column}"
+        ):
+            m1_predictions(
+                candidates,
+                reference,
+                listing.drop(columns=[column]),
+                {0: ["c1"]},
+                _fake_embedder,
+            )
+
+
+def test_m1_output_has_no_text():
+    """The prediction frame drops the window and any text column."""
+    candidates, reference, listing = _prediction_fixture()
+    candidates = candidates.assign(texto="hola @name")
+
+    result = m1_predictions(
+        candidates, reference, listing, {0: ["c1"]}, _fake_embedder
+    )
+
+    assert "texto" not in result.columns
+    assert "ventana" not in result.columns
+    assert "author_hash" not in result.columns
+    assert not any("@" in str(value) for value in result.to_numpy().ravel())
