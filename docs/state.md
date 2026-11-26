@@ -21,7 +21,8 @@ S3 baseline replay is complete and passes. The repository can rebuild the 273 ca
 4. Write `docs/results/0004-m1-replay-diagnostics.md` and commit final docs.
 
 ## Open questions
-- None blocking S3. The 20-candidate implicit-negative audit stays deferred; the 17 candidates never in a test split are covered by the global count only.
+- S4: `inicio_oracion` treats a newline as a sentence boundary. Phrases can span lines; the group should decide whether to keep the frozen rule or change it. A change alters M1/M2 and needs an ADR.
+- The 20-candidate implicit-negative audit stays deferred; the 17 candidates never in a test split are covered by the global count only.
 
 ## Gotchas
 - Use `.\.venv\Scripts\python.exe`; do not rely on global Python.
