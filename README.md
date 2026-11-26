@@ -5,9 +5,10 @@ Anotación automática de conectores y operadores discursivos (Fuentes Rodrígue
 
 **Estado:** el piloto está hecho y sus resultados viven en el notebook de Colab
 dentro de `doc/`. El repositorio ya reproduce la tabla publicada de métricas,
-reconstruye las 273 candidatas y reimplementa los baselines B0 y B1; M1 y M2
-todavía viven sólo en el notebook y se reimplementan por slices. Se empieza por
-entender (`/onboard`) y reproducir, no por escribir un modelo nuevo.
+reconstruye las 273 candidatas y reimplementa los baselines B0 y B1 y el modelo
+M1; M2 todavía vive sólo en el notebook y se reimplementa en el siguiente
+slice. Se empieza por entender (`/onboard`) y reproducir, no por escribir un
+modelo nuevo.
 
 ## El problema
 
