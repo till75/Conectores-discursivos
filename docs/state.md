@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is complete and is a full pass: the TDD cycle, the slow published comparison and the published-margin investigation are done. The diagnostic report is written. No S5 work remains except the final docs commit and approval.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is drafted, and no S6 code or tests have been written.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -20,16 +20,19 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 margin cause found and fixed: scikit-learn's `GroupKFold` changed the tie-break for equal-sized groups from unstable `np.argsort` to `kind="stable"`. `_group_kfold_splits` reproduces the pre-stable behaviour; M1 margins stay `0.10/0.10/0.10/0.05/0.15`, M2 margins now match `0.15/0.10/0.20/0.10/0.20`, and `margin_deviations` is empty on the real inputs.
 - S5 full pass: 13 slow tests and 124 default tests pass; `ruff check .` clean.
 - S5 diagnostic report written: `docs/results/0005-m2-replay-diagnostics.md`, including the margin investigation, the fix, the per-seed table, the intervals and the privacy check.
+- S5 approved and pushed: `0060709`; `origin/main` is at `0060709`.
+- S6 spec drafted: `docs/specs/0006-publication-pack.md`; no S6 code or tests yet.
 
 ## Next
-1. Commit the final S5 docs.
-2. Stop for approval; do not push before it.
-3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
-4. Do not use the published margins to choose the margin.
+1. Run `/spec-review S6` and get approval before `/tdd`.
+2. The review must resolve the output layout, the data/model card language, and the zip-extraction step for the published tables.
+3. Do not write S6 implementation code before approval.
 
 ## Open questions
-- What causes the published-margin mismatch: library drift or an older margin path? Investigate after the S5 TDD cycle, before closing S5.
-- The partial result is a fallback, not the default close.
+- S6 output layout: seven files and the flat summary are proposed; the review must approve them.
+- S6 data/model cards are proposed in Spanish; the review must confirm.
+- The published tables are inside `doc/resultados_hito2.zip`; the README needs an extraction step or the CLI needs a directory path.
+- The `inicio_oracion` newline rule, the 20-candidate audit and the privacy exceptions remain open.
 
 ## Gotchas
 - Run Python as `.venv\Scripts\python.exe`; spaCy model is `es_core_news_sm`.
