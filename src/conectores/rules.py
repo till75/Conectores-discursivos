@@ -44,6 +44,13 @@ class Token(Protocol):
 NLP = Callable[[str], Sequence[Token]]
 
 
+def load_nlp(model_name: str = "es_core_news_sm") -> NLP:
+    """Load the frozen Spanish spaCy model."""
+    import spacy
+
+    return spacy.load(model_name)
+
+
 def anotar_gramatica(cand: pd.DataFrame, nlp: NLP) -> pd.DataFrame:
     """Add the five POS columns to the candidate frame."""
     for column in ("texto", "inicio", "unidad"):

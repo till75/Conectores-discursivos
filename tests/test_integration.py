@@ -21,7 +21,8 @@ from conectores.candidates import (
 )
 from conectores.features import sentence_embedder
 from conectores.metrics import count_undetected, main
-from conectores.models import replay_m1
+from conectores.models import replay_m1, replay_m2
+from conectores.rules import load_nlp
 
 DOC = Path(__file__).resolve().parents[1] / "doc"
 ZIP = DOC / "resultados_hito2.zip"
@@ -338,6 +339,96 @@ def test_m1_matches_published_metrics(m1_replay):
     ].iloc[0]
     assert round(m1_summary["F1_etiqueta_mean"], 3) == 0.360
     assert round(abstention_summary["F1_etiqueta_mean"], 3) == 0.394
+
+
+@pytest.fixture(scope="module")
+def m2_replay(tmp_path_factory):
+    """Rebuild M2 once with the real models and the published tables."""
+    tmp_path = tmp_path_factory.mktemp("m2")
+    publicable, reference, listing, candidate_set, test_ids = _baseline_inputs(
+        tmp_path
+    )
+    published = {
+        "predictions": pd.read_csv(publicable / "predicciones_test.csv"),
+        "systems": pd.read_csv(publicable / "resultados_semillas.csv"),
+        "summary": _read_summary(publicable / "resumen_sistemas.csv"),
+    }
+    try:
+        embedder = sentence_embedder()
+    except Exception as exc:
+        pytest.skip(f"frozen embedding model unavailable: {exc}")
+    try:
+        nlp = load_nlp()
+    except Exception as exc:
+        pytest.skip(f"spaCy model unavailable: {exc}")
+    return replay_m2(
+        candidate_set,
+        reference,
+        listing,
+        test_ids,
+        published,
+        embedder,
+        nlp,
+    )
+
+
+def test_m2_matches_published_predictions(m2_replay):
+    """The rebuilt M2 core values match the 439 published rows."""
+    result = m2_replay
+
+    assert result.deviations == []
+    assert len(result.predictions) == 439
+    assert result.predictions.groupby("semilla").size().to_dict() == {
+        0: 65,
+        1: 97,
+        2: 92,
+        3: 124,
+        4: 61,
+    }
+    assert set(result.margins) == {0, 1, 2, 3, 4}
+    assert not any("p_M2" in deviation for deviation in result.deviations)
+
+
+def test_m2_matches_published_metrics(m2_replay):
+    """The five M2 rows and the M2 summary row match to three decimals."""
+    result = m2_replay
+
+    assert result.deviations == []
+    assert len(result.metrics) == 10
+    assert len(result.summary) == 2
+    m2_rows = result.metrics[result.metrics["sistema"] == "M2"].reset_index(
+        drop=True
+    )
+    abstention_rows = result.metrics[
+        result.metrics["sistema"] == "M2 con abstención"
+    ].reset_index(drop=True)
+    assert list(m2_rows["F1_etiqueta"].round(3)) == [
+        0.432,
+        0.545,
+        0.500,
+        0.452,
+        0.486,
+    ]
+    assert len(abstention_rows) == 5
+    assert result.margin_deviations
+    assert any(
+        "abstiene_M2" in deviation
+        for deviation in result.margin_deviations
+    )
+    m2_summary = result.summary[result.summary["sistema"] == "M2"].iloc[0]
+    assert round(m2_summary["F1_etiqueta_mean"], 3) == 0.483
+
+
+def test_m2_traceability_matches_published(m2_replay):
+    """The aggregate traceability counts match the published values."""
+    assert m2_replay.traceability == {
+        "etiquetas_discursivas": 91,
+        "fijadas_listado": 58,
+        "fijadas_listado_correctas": 34,
+        "elegidas_modelo": 33,
+        "elegidas_modelo_correctas": 20,
+        "revisar_categoria": 43,
+    }
 
 
 def test_replay_perturbed_cell_fails(tmp_path):

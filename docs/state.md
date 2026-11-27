@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle has started; the frozen rule set, `anotar_gramatica`, `M2FeatureBuilder`, `M2Model`, `choose_margin_for`, `m2_predictions` and `replay_m2` are green.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle is complete: the frozen rule set, `anotar_gramatica`, `M2FeatureBuilder`, `M2Model`, `choose_margin_for`, `m2_predictions`, `replay_m2` and the slow published comparison are green. The only open item is the published-margin mismatch.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -16,10 +16,13 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 margin: `choose_margin_for` is the generic grouped-CV margin; `choose_margin` delegates to it and keeps the S4 behaviour.
 - S5 predictions: `m2_predictions` resolves test threads, fits M2 per seed, learns the margin inside training and returns `M2_COLUMNS` without text.
 - S5 replay: `replay_m2` returns predictions, metrics, summary, margins, traceability and the split core/margin deviations; the prediction, systems and summary comparisons are implemented.
+- S5 slow comparison: the three M2 integration tests pass on the real inputs; core deviations are empty, the M2 rows and summary match, and traceability is 91/58/34/33/20/43. `load_nlp` was added to load `es_core_news_sm`.
+- S5 margin mismatch: the `M2 con abstención` rows still differ on 27/439 `abstiene_M2` rows; the margin deviations are named by `replay_m2`.
 
 ## Next
-1. Continue `/tdd` with the slow published comparison (`test_m2_matches_published_predictions`, `test_m2_matches_published_metrics`, `test_m2_traceability_matches_published`).
-2. Then the published-margin investigation before closing S5.
+1. Investigate the published-margin mismatch and fix it before closing S5 if possible.
+2. If it cannot be fixed, close S5 as partial with the 27/439 mismatch recorded.
+3. Write `docs/results/0005-m2-replay-diagnostics.md` and commit the final S5 docs.
 3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
 4. Do not use the published margins to choose the margin.
 
