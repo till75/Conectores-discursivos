@@ -1,8 +1,9 @@
 # Spec 0005 — M2 replay
 
 **Slice:** S5 — M2 replay
-**Status:** draft for review
+**Status:** approved
 **Date:** 2026-11-27
+**Approved:** 2026-11-27 by Till
 **Design note:** [0005-m2-replay.md](../design/0005-m2-replay.md)
 **Requirements source:** `docs/00-brief.md`, `docs/plan.md`,
 `doc/equipo11_B0_B1_M1_M2.ipynb`, `doc/resultados_hito2.zip`, `gate.toml`,
@@ -309,7 +310,8 @@ model.
 
 `M2Model.fit`:
 
-- requires `oro` and the five `POS_COLUMNS`;
+- requires `oro`, the five `POS_COLUMNS` and the feature columns listed in
+  Input requirements;
 - raises `ValueError("train is empty")` for an empty frame;
 - builds `M2FeatureBuilder` on the training rows;
 - fits step 1 with the same settings as M1: `LogisticRegression(C=C,
@@ -586,6 +588,8 @@ The prototype margins are `0.20/0.15/0.15/0.15/0.20`; 27 of 439
 | `test_anotar_gramatica_requires_columns` | unit | Missing `texto`, `inicio` or `unidad` names it. |
 | `test_m2_feature_builder_order` | unit | Base blocks, 15 rule columns and the POS block in order. |
 | `test_m2_feature_builder_unseen_pos` | unit | An unseen POS key adds no column. |
+| `test_m2_fit_empty_training` | unit | `M2Model.fit` raises `ValueError("train is empty")`. |
+| `test_m2_fit_requires_columns` | unit | Missing `oro` or a POS column names it. |
 | `test_m2_list_restriction_single` | unit | One admitted label wins over the model preference. |
 | `test_m2_list_restriction_multiple` | unit | The model picks among admitted labels only. |
 | `test_m2_never_uses_vistas` | unit | A training-only label outside the listing is never predicted. |
@@ -681,43 +685,23 @@ first. The newline rule remains frozen; changing it needs an ADR.
 - **Deferred audit.** The 209 implicit negatives remain a protocol assumption;
   the 20-candidate audit is still deferred.
 
-## Open decision for `/spec-review`
+## Approved decisions
 
-**Decision 1 — accept a partial result when the margins differ.**
+**Decision 1 — partial result accepted (2026-11-27).** When
+`deviations == []` and `margin_deviations != []`, S5 is **partial**: the
+no-abstention M2 is reproduced, but the published abstention rows are not. The
+report records the 27/439 `abstiene_M2` mismatch and a follow-up. The final
+review of the partial outcome happens after both the no-abstention and margin
+paths are built. Treating partial as a pass, or using the published margins,
+needs an ADR.
 
-- *What changes:* the plan says the M2 metrics match the published rows at three
-  decimals. The prototype shows the no-abstention M2 matches exactly, but the
-  learned margins are `0.20/0.15/0.15/0.15/0.20` instead of the published
-  `0.15/0.10/0.20/0.10/0.20`, so 27/439 `abstiene_M2` rows and the
-  `M2 con abstención` rows differ.
-- *Recommended:* accept a **partial** result when `deviations == []` and
-  `margin_deviations != []`. The report records the mismatch and a follow-up.
-  This keeps the linguistic reproduction and does not copy the published
-  margins.
-- *Alternative:* require a full match, so S5 fails if the margins differ. This
-  keeps the plan's wording but blocks S5 on a margin path we cannot reproduce.
-  Using the published margins instead needs an ADR and is not a replay.
-- *Question:* approve the partial criterion, or require a full match/ADR?
+**Decision 2 — S4 prediction return order (2026-11-27).** `M2Model.predict`
+returns `(labels, probabilities, abstention, origin, review)`, not the
+notebook's `(labels, abstention, probabilities, origin, review)`.
 
-**Decision 2 — keep the S4 prediction return order.**
-
-- *What changes:* `M2Model.predict` returns `(labels, probabilities,
-  abstention, origin, review)`, not the notebook's `(labels, abstention,
-  probabilities, origin, review)`.
-- *Recommended:* keep the S4 order so callers use one convention. The values are
-  unchanged.
-- *Alternative:* match the notebook order exactly, at the cost of two different
-  conventions in the same module.
-- *Question:* approve the S4 order?
-
-**Decision 3 — raise `ValueError` for an unknown unit.**
-
-- *What changes:* a unit with no admitted category raises `ValueError` naming
-  the unit instead of the notebook's `IndexError`.
-- *Recommended:* raise `ValueError`; it is a clear failure and the real inputs
-  never hit it.
-- *Alternative:* keep the notebook's `IndexError` for a literal port.
-- *Question:* approve the `ValueError`?
+**Decision 3 — `ValueError` for an unknown unit (2026-11-27).** A unit with no
+admitted category raises `ValueError` naming the unit, not the notebook's
+`IndexError`.
 
 ## Rough size
 
@@ -729,6 +713,35 @@ lines.
 
 ## Approval
 
-Pending `/spec-review`.
+**Approved:** 2026-11-27 by Till.
 
-Next: /spec-review S5.
+**Approved decisions:** partial result accepted when the core matches and the
+margins differ; S4 prediction return order; `ValueError` for an unknown unit.
+
+**Assumptions:**
+
+- The notebook's `M2`, `REGLAS`, `anotar_gramatica` and `elegir_margen_m` are
+  the reference implementation.
+- The frozen spaCy model is `es_core_news_sm`; the frozen embedding model is
+  `paraphrase-multilingual-MiniLM-L12-v2`; the frozen test files define the
+  split.
+- The published no-abstention M2 rows and the traceability counts are the
+  target.
+- The `1e-5` `p_M2` tolerance is a fidelity guard, not a metric change.
+- The margin mismatch is a finding to investigate, not a reason to use test
+  labels or published margins.
+- `M2FeatureBuilder` lives in `rules.py`; `TRACEABILITY_TARGET` is a constant in
+  `models.py`.
+
+**Deferred:**
+
+- The final review of the partial outcome, after both the no-abstention and
+  margin paths are built.
+- The cause of the published-margin mismatch.
+- The 20-candidate implicit-negative audit.
+- The application corpus and its predictions.
+- The newline-rule change.
+- The 548/550 reconciliation, F2 and coverage-at-budget.
+- A rule-first M3 or any LLM annotator.
+
+Next: /tdd frozen rule set.
