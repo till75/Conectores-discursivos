@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle is complete and the published-margin mismatch is resolved: the frozen rule set, `anotar_gramatica`, `M2FeatureBuilder`, `M2Model`, `choose_margin_for`, `m2_predictions`, `replay_m2` and the slow published comparison are green. The only remaining work is the S5 diagnostic report and final docs.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is complete and is a full pass: the TDD cycle, the slow published comparison and the published-margin investigation are done. The diagnostic report is written. No S5 work remains except the final docs commit and approval.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -19,10 +19,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 slow comparison: the three M2 integration tests pass on the real inputs; core deviations are empty, the M2 rows and summary match, and traceability is 91/58/34/33/20/43. `load_nlp` was added to load `es_core_news_sm`.
 - S5 margin cause found and fixed: scikit-learn's `GroupKFold` changed the tie-break for equal-sized groups from unstable `np.argsort` to `kind="stable"`. `_group_kfold_splits` reproduces the pre-stable behaviour; M1 margins stay `0.10/0.10/0.10/0.05/0.15`, M2 margins now match `0.15/0.10/0.20/0.10/0.20`, and `margin_deviations` is empty on the real inputs.
 - S5 full pass: 13 slow tests and 124 default tests pass; `ruff check .` clean.
+- S5 diagnostic report written: `docs/results/0005-m2-replay-diagnostics.md`, including the margin investigation, the fix, the per-seed table, the intervals and the privacy check.
 
 ## Next
-1. Write `docs/results/0005-m2-replay-diagnostics.md` with the investigation, the fix and the full-pass evidence.
-2. Commit the final S5 docs, then stop for approval.
+1. Commit the final S5 docs.
+2. Stop for approval; do not push before it.
 3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
 4. Do not use the published margins to choose the margin.
 
