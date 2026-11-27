@@ -1,22 +1,23 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832` and the tree is clean. S5 (M2 replay) has completed `/learn`: the author chose A, the faithful port with the margin learned by grouped CV inside training. The design note and the M2 teaching note are written. No S5 spec or code has been written.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832` and the tree is clean. S5 (M2 replay) has completed `/learn` and written its draft spec: the author chose A, the faithful port with the margin learned by grouped CV inside training. No S5 code has been written.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
 - S4 spec approved: `e585539`; diagnostics report committed: `f9ab832` (`docs/results/0004-m1-replay-diagnostics.md`).
 - S5 prototype evidence collected outside the repo: no-abstention M2 exact, margin path differs.
 - S5 `/learn` complete: author chose A; `docs/design/0005-m2-replay.md` and `docs/learn/04-m2-rules-provenance.md` written and linked from the learn index.
+- S5 spec drafted: `docs/specs/0005-m2-replay.md`, including the partial-result criterion for the 27/439 margin mismatch.
 
 ## Next
-1. Hand off to `/spec S5`: the strict listing restriction, the 15 frozen rules, spaCy POS, the rare-category flag, provenance and the margin path.
-2. Run `/spec-review` and get approval before `/tdd`.
+1. Run `/spec-review S5` and get approval before `/tdd`.
+2. The review must resolve the partial-result decision and the two API decisions.
 3. Do not write S5 implementation code before the spec is approved.
 
 ## Open questions
-- Should the S5 report treat the 27/439 `abstiene_M2` mismatch as fail or partial? Not decided; the spec must fix the criterion.
-- What causes the published-margin mismatch: library drift or an older margin path? S5 investigates.
+- `/spec-review` must approve or reject the partial-result criterion for the 27/439 `abstiene_M2` mismatch.
+- What causes the published-margin mismatch: library drift or an older margin path? S5 investigates after approval.
 
 ## Gotchas
 - Run Python as `.venv\Scripts\python.exe`; spaCy model is `es_core_news_sm`.
