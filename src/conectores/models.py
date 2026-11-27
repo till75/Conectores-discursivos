@@ -34,6 +34,41 @@ M1_COLUMNS = [
     "M1_con_abstencion",
 ]
 
+M2_COLUMNS = [
+    "semilla",
+    "comment_id",
+    "thread_id",
+    "unidad",
+    "inicio",
+    "oro",
+    "M2",
+    "p_M2",
+    "origen_M2",
+    "revisar_categoria",
+    "abstiene_M2",
+]
+
+M2_INPUT_COLUMNS = [
+    "comment_id",
+    "thread_id",
+    "unidad",
+    "inicio",
+    "oro",
+    "texto",
+    "ventana",
+    "coma_antes",
+    "coma_despues",
+    "inicio_comentario",
+    "inicio_oracion",
+    "fin_enunciado",
+    "is_reply",
+    "pos_u",
+    "pos_ant",
+    "pos_sig",
+    "tok_ant",
+    "tok_sig",
+]
+
 METRIC_COLUMNS = [
     "F1_etiqueta",
     "F1_uso_discursivo",
@@ -347,6 +382,60 @@ def m1_predictions(
         candidates, reference, listing, test_ids, embedder
     )
     return predictions
+
+
+def m2_predictions(
+    candidates: pd.DataFrame,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+    embedder: Embedder,
+) -> pd.DataFrame:
+    """Return one M2 row per test candidate per frozen split."""
+    _require(candidates, M2_INPUT_COLUMNS, "candidates")
+    _require(reference, ["comment_id", "thread_id"], "reference")
+    _require(
+        listing,
+        ["unidad", "macrofuncion", "categoria", "subcategoria"],
+        "listing",
+    )
+    labels = listing_label_map(listing)
+    comment_to_thread = dict(
+        zip(reference["comment_id"], reference["thread_id"], strict=True)
+    )
+    frames = []
+    for seed, ids in test_ids.items():
+        seed = int(seed)
+        threads = {
+            comment_to_thread[comment_id]
+            for comment_id in ids
+            if comment_id in comment_to_thread
+        }
+        test = candidates[candidates["thread_id"].isin(threads)]
+        train = candidates[~candidates["thread_id"].isin(threads)]
+        if test.empty:
+            continue
+        model = M2Model(labels, embedder, seed=seed).fit(train)
+        predicted, probabilities, _, origin, review = model.predict(
+            test, 0.0
+        )
+        margin = choose_margin_for(
+            M2Model, train, labels, embedder, seed=seed
+        )
+        abstiene = np.abs(probabilities - 0.5) < margin
+        frames.append(
+            test.assign(
+                semilla=seed,
+                M2=predicted,
+                p_M2=probabilities,
+                origen_M2=origin,
+                revisar_categoria=review,
+                abstiene_M2=abstiene,
+            )
+        )
+    if not frames:
+        return pd.DataFrame(columns=M2_COLUMNS)
+    return pd.concat(frames, ignore_index=True)[M2_COLUMNS]
 
 
 def _format_key(keys: Sequence[str], key: Sequence[object]) -> str:

@@ -10,11 +10,13 @@ from conectores import models
 from conectores.candidates import NO, CandidateSet
 from conectores.metrics import compute_metrics
 from conectores.models import (
+    M2_COLUMNS,
     M1Model,
     M2Model,
     choose_margin,
     choose_margin_for,
     m1_predictions,
+    m2_predictions,
     replay_m1,
 )
 from conectores.rules import POS_COLUMNS
@@ -717,3 +719,122 @@ def test_m2_fit_requires_columns():
 
     with pytest.raises(ValueError, match="pos_sig"):
         M2Model(LABELS, _fake_embedder).fit(train)
+
+
+def _m2_prediction_fixture():
+    candidates, reference, listing = _prediction_fixture()
+    candidates = candidates.assign(
+        texto=candidates["ventana"].str.replace(r"\[\[|\]\]", "", regex=True),
+        pos_u="ADV",
+        pos_ant="DET",
+        pos_sig="VERB",
+        tok_ant="el",
+        tok_sig="tema",
+    )
+    return candidates, reference, listing
+
+
+def test_m2_predictions_uses_reference_threads():
+    """Test threads select rows; unknown IDs are ignored."""
+    candidates, reference, listing = _m2_prediction_fixture()
+
+    result = m2_predictions(
+        candidates,
+        reference,
+        listing,
+        {0: ["c1", "missing"], 1: ["c2"]},
+        _fake_embedder,
+    )
+
+    assert list(result.columns) == M2_COLUMNS
+    assert result.groupby("semilla").size().to_dict() == {0: 3, 1: 3}
+    assert set(result[result.semilla == 0].comment_id) == {
+        "c1",
+        "c7",
+        "c13",
+    }
+    assert set(result[result.semilla == 1].comment_id) == {
+        "c2",
+        "c8",
+        "c14",
+    }
+    assert result.p_M2.between(0, 1).all()
+
+
+def test_m2_predictions_requires_columns():
+    """Each missing input column names its frame."""
+    candidates, reference, listing = _m2_prediction_fixture()
+    candidate_columns = (
+        "comment_id",
+        "thread_id",
+        "unidad",
+        "inicio",
+        "oro",
+        "texto",
+        "ventana",
+        "coma_antes",
+        "coma_despues",
+        "inicio_comentario",
+        "inicio_oracion",
+        "fin_enunciado",
+        "is_reply",
+        "pos_u",
+        "pos_ant",
+        "pos_sig",
+        "tok_ant",
+        "tok_sig",
+    )
+
+    for column in candidate_columns:
+        with pytest.raises(
+            ValueError,
+            match=f"candidates is missing required column: {column}",
+        ):
+            m2_predictions(
+                candidates.drop(columns=[column]),
+                reference,
+                listing,
+                {0: ["c1"]},
+                _fake_embedder,
+            )
+
+    for column in ("comment_id", "thread_id"):
+        with pytest.raises(
+            ValueError,
+            match=f"reference is missing required column: {column}",
+        ):
+            m2_predictions(
+                candidates,
+                reference.drop(columns=[column]),
+                listing,
+                {0: ["c1"]},
+                _fake_embedder,
+            )
+
+    for column in ("unidad", "macrofuncion", "categoria", "subcategoria"):
+        with pytest.raises(
+            ValueError,
+            match=f"listing is missing required column: {column}",
+        ):
+            m2_predictions(
+                candidates,
+                reference,
+                listing.drop(columns=[column]),
+                {0: ["c1"]},
+                _fake_embedder,
+            )
+
+
+def test_m2_output_has_no_text():
+    """The prediction frame drops text, windows and POS internals."""
+    candidates, reference, listing = _m2_prediction_fixture()
+    candidates = candidates.assign(texto="hola @name")
+
+    result = m2_predictions(
+        candidates, reference, listing, {0: ["c1"]}, _fake_embedder
+    )
+
+    assert "texto" not in result.columns
+    assert "ventana" not in result.columns
+    assert "author_hash" not in result.columns
+    assert not any("@" in str(value) for value in result.to_numpy().ravel())
