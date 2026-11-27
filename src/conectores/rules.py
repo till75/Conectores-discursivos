@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Sequence
+from typing import Any, Protocol
 
 import pandas as pd
 
 Rule = Callable[[Any], bool]
+
+POS_COLUMNS = ["pos_u", "pos_ant", "pos_sig", "tok_ant", "tok_sig"]
 
 REQUIRED_COLUMNS = [
     "unidad",
@@ -26,6 +28,68 @@ REQUIRED_COLUMNS = [
     "tok_ant",
     "tok_sig",
 ]
+
+
+class Token(Protocol):
+    idx: int
+    text: str
+    pos_: str
+
+
+NLP = Callable[[str], Sequence[Token]]
+
+
+def anotar_gramatica(cand: pd.DataFrame, nlp: NLP) -> pd.DataFrame:
+    """Add the five POS columns to the candidate frame."""
+    for column in ("texto", "inicio", "unidad"):
+        if column not in cand.columns:
+            raise ValueError(
+                f"candidates is missing required column: {column}"
+            )
+    cache: dict[str, Sequence[Token]] = {}
+    rows = []
+    for texto, inicio, unidad in zip(
+        cand["texto"], cand["inicio"], cand["unidad"], strict=True
+    ):
+        if texto not in cache:
+            cache[texto] = nlp(texto)
+        doc = cache[texto]
+        fin = inicio + len(unidad)
+        dentro = next(
+            (
+                token
+                for token in doc
+                if token.idx < fin and token.idx + len(token.text) > inicio
+            ),
+            None,
+        )
+        antes = [
+            token
+            for token in doc
+            if token.idx + len(token.text) <= inicio
+        ]
+        despues = next(
+            (token for token in doc if token.idx >= fin),
+            None,
+        )
+        rows.append(
+            {
+                "pos_u": dentro.pos_ if dentro is not None else "X",
+                "pos_ant": antes[-1].pos_ if antes else "INICIO",
+                "pos_sig": despues.pos_ if despues is not None else "FIN",
+                "tok_ant": antes[-1].text.lower() if antes else "",
+                "tok_sig": despues.text.lower()
+                if despues is not None
+                else "",
+            }
+        )
+    return pd.concat(
+        [
+            cand.reset_index(drop=True),
+            pd.DataFrame(rows, columns=POS_COLUMNS),
+        ],
+        axis=1,
+    )
 
 
 def _pregunta(texto: str, inicio: int) -> bool:
