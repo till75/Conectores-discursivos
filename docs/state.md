@@ -12,12 +12,13 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832` and
 
 ## Next
 1. Start `/tdd` with the frozen rule set.
-2. Build the no-abstention M2 path and the margin path; review the partial outcome when both are built.
-3. Do not use the published margins to choose the margin.
+2. Complete the S5 TDD cycle: rules, grammar, features, model, predictions, metrics and traceability.
+3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
+4. Do not use the published margins to choose the margin.
 
 ## Open questions
-- What causes the published-margin mismatch: library drift or an older margin path? S5 investigates during implementation.
-- The final review of the partial outcome is deferred until both the no-abstention and margin paths are built.
+- What causes the published-margin mismatch: library drift or an older margin path? Investigate after the S5 TDD cycle, before closing S5.
+- The partial result is a fallback, not the default close.
 
 ## Gotchas
 - Run Python as `.venv\Scripts\python.exe`; spaCy model is `es_core_news_sm`.

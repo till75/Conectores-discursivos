@@ -645,11 +645,12 @@ unchanged. The margin is learned inside training only, as R3 requires; the test
 split is never used. The rule set is recorded, not changed. Recording the frozen
 rules does not need an ADR; editing them would.
 
-The one protocol-adjacent change is the acceptance of a partial result when the
-published M2 margins cannot be reproduced. That changes what the slice's result
-means, so `/spec-review` must approve it explicitly. If the group wants to treat
-the partial result as a pass, or to use the published margins, an ADR comes
-first. The newline rule remains frozen; changing it needs an ADR.
+The one protocol-adjacent change is the acceptance of a partial result as a
+fallback when the published M2 margins cannot be reproduced after the S5 TDD
+cycle. That changes what the slice's result means, so `/spec-review` approved it
+explicitly. If the group wants to treat the partial result as a pass, or to use
+the published margins, an ADR comes first. The newline rule remains frozen;
+changing it needs an ADR.
 
 ## Contradictions and open points
 
@@ -687,13 +688,14 @@ first. The newline rule remains frozen; changing it needs an ADR.
 
 ## Approved decisions
 
-**Decision 1 — partial result accepted (2026-11-27).** When
+**Decision 1 — partial result accepted as a fallback (2026-11-27).** When
 `deviations == []` and `margin_deviations != []`, S5 is **partial**: the
 no-abstention M2 is reproduced, but the published abstention rows are not. The
-report records the 27/439 `abstiene_M2` mismatch and a follow-up. The final
-review of the partial outcome happens after both the no-abstention and margin
-paths are built. Treating partial as a pass, or using the published margins,
-needs an ADR.
+partial result is a fallback, not the default close. After the S5 TDD cycle,
+investigate the published-margin mismatch and fix it before closing S5 if
+possible. If the cause cannot be found or fixed, close S5 as partial with the
+27/439 `abstiene_M2` mismatch and a follow-up. Treating partial as a pass, or
+using the published margins, needs an ADR.
 
 **Decision 2 — S4 prediction return order (2026-11-27).** `M2Model.predict`
 returns `(labels, probabilities, abstention, origin, review)`, not the
@@ -715,8 +717,9 @@ lines.
 
 **Approved:** 2026-11-27 by Till.
 
-**Approved decisions:** partial result accepted when the core matches and the
-margins differ; S4 prediction return order; `ValueError` for an unknown unit.
+**Approved decisions:** partial result accepted as a fallback when the core
+matches and the margins differ; S4 prediction return order; `ValueError` for an
+unknown unit.
 
 **Assumptions:**
 
@@ -733,11 +736,13 @@ margins differ; S4 prediction return order; `ValueError` for an unknown unit.
 - `M2FeatureBuilder` lives in `rules.py`; `TRACEABILITY_TARGET` is a constant in
   `models.py`.
 
-**Deferred:**
+**Deferred (after the S5 TDD cycle, before closing S5):**
 
-- The final review of the partial outcome, after both the no-abstention and
-  margin paths are built.
-- The cause of the published-margin mismatch.
+- The published-margin investigation: find the cause and fix it if possible.
+- If it cannot be fixed, the partial-outcome report and follow-up.
+
+**Deferred (beyond S5):**
+
 - The 20-candidate implicit-negative audit.
 - The application corpus and its predictions.
 - The newline-rule change.
