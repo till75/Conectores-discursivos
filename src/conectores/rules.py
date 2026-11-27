@@ -14,6 +14,7 @@ from conectores.features import Embedder, FeatureBuilder
 
 Rule = Callable[[Any], bool]
 
+MIN_EJEMPLOS = 5
 POS_COLUMNS = ["pos_u", "pos_ant", "pos_sig", "tok_ant", "tok_sig"]
 
 REQUIRED_COLUMNS = [

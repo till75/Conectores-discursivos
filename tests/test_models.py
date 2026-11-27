@@ -11,10 +11,12 @@ from conectores.candidates import NO, CandidateSet
 from conectores.metrics import compute_metrics
 from conectores.models import (
     M1Model,
+    M2Model,
     choose_margin,
     m1_predictions,
     replay_m1,
 )
+from conectores.rules import POS_COLUMNS
 
 
 def _candidate(window, unit, gold):
@@ -564,3 +566,139 @@ def test_m1_output_has_no_text():
     assert "ventana" not in result.columns
     assert "author_hash" not in result.columns
     assert not any("@" in str(value) for value in result.to_numpy().ravel())
+
+
+def _m2_train():
+    train = _train()
+    return train.assign(
+        texto=train["ventana"].str.replace(r"\[\[|\]\]", "", regex=True),
+        inicio=0,
+        pos_u="ADV",
+        pos_ant="DET",
+        pos_sig="VERB",
+        tok_ant="el",
+        tok_sig="tema",
+    )
+
+
+def _m2_test(window, unit="ya", gold="OP:MODAL"):
+    test = _test(window, unit, gold)
+    return test.assign(
+        texto=test["ventana"].str.replace(r"\[\[|\]\]", "", regex=True),
+        inicio=0,
+        pos_u="ADV",
+        pos_ant="DET",
+        pos_sig="VERB",
+        tok_ant="el",
+        tok_sig="tema",
+    )
+
+
+def test_m2_list_restriction_multiple():
+    """With several admitted labels, the model chooses among them."""
+    model = M2Model(LABELS, _fake_embedder).fit(_m2_train())
+
+    labels, _, abstention, origin, _ = model.predict(
+        _m2_test("beta context [[ya]]"), 0.0
+    )
+
+    assert labels == ["OP:MODAL"]
+    assert bool(abstention[0]) is False
+    assert origin == ["modelo"]
+
+
+def test_m2_list_restriction_single():
+    """One admitted label wins over the model preference."""
+    model = M2Model({"ya": ["CON:ADICIÓN"]}, _fake_embedder).fit(_m2_train())
+
+    labels, _, _, origin, _ = model.predict(
+        _m2_test("beta context [[ya]]"), 0.0
+    )
+
+    assert labels == ["CON:ADICIÓN"]
+    assert origin == ["listado"]
+
+
+def test_m2_never_uses_vistas():
+    """A training-only label outside the listing is never returned."""
+    model = M2Model(
+        {"ya": ["CON:ADICIÓN", "CON:CIERRE"]},
+        _fake_embedder,
+    ).fit(_m2_train())
+
+    labels, _, _, _, _ = model.predict(_m2_test("beta context [[ya]]"), 0.0)
+
+    assert labels == ["CON:ADICIÓN"]
+    assert "OP:MODAL" not in labels
+
+
+def test_m2_unknown_unit_raises():
+    """A unit with no admitted category raises and names the unit."""
+    model = M2Model({"ya": ["CON:ADICIÓN"]}, _fake_embedder).fit(_m2_train())
+
+    with pytest.raises(ValueError, match="nueva"):
+        model.predict(_m2_test("beta context [[nueva]]", unit="nueva"), 0.0)
+
+
+def test_m2_provenance():
+    """The listing and the model both record their decisions."""
+    single = M2Model(
+        {"ya": ["CON:ADICIÓN"]}, _fake_embedder
+    ).fit(_m2_train())
+    _, _, _, single_origin, _ = single.predict(
+        _m2_test("beta context [[ya]]"), 0.0
+    )
+
+    multiple = M2Model(LABELS, _fake_embedder).fit(_m2_train())
+    _, _, _, multiple_origin, _ = multiple.predict(
+        _m2_test("beta context [[ya]]"), 0.0
+    )
+
+    assert single_origin == ["listado"]
+    assert multiple_origin == ["modelo"]
+
+
+def test_m2_rare_category_flag():
+    """Four positives flag the category; five do not."""
+    flagged = M2Model(LABELS, _fake_embedder).fit(_m2_train().drop(index=0))
+    _, _, _, _, review = flagged.predict(
+        _m2_test("alpha context [[ya]]"), 0.0
+    )
+
+    full = M2Model(LABELS, _fake_embedder).fit(_m2_train())
+    _, _, _, _, full_review = full.predict(
+        _m2_test("alpha context [[ya]]"), 0.0
+    )
+
+    assert list(review) == [True]
+    assert list(full_review) == [False]
+
+
+def test_m2_abstention():
+    """A wide margin abstains and records the model origin."""
+    model = M2Model(LABELS, _fake_embedder).fit(_m2_train())
+
+    labels, _, abstention, origin, review = model.predict(
+        _m2_test("beta context [[ya]]"), 0.5
+    )
+
+    assert labels == [NO]
+    assert bool(abstention[0]) is True
+    assert origin == ["modelo"]
+    assert list(review) == [False]
+
+
+def test_m2_fit_empty_training():
+    """An empty training frame is rejected."""
+    empty = pd.DataFrame(columns=["oro", *POS_COLUMNS])
+
+    with pytest.raises(ValueError, match="train is empty"):
+        M2Model(LABELS, _fake_embedder).fit(empty)
+
+
+def test_m2_fit_requires_columns():
+    """A missing POS column is named."""
+    train = _m2_train().drop(columns=["pos_sig"])
+
+    with pytest.raises(ValueError, match="pos_sig"):
+        M2Model(LABELS, _fake_embedder).fit(train)

@@ -1,4 +1,4 @@
-"""M1 model for the M1 replay slice."""
+"""Models for the M1 and M2 replay slices."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from conectores.metrics import (
     count_undetected,
     summary_systems,
 )
+from conectores.rules import MIN_EJEMPLOS, POS_COLUMNS, M2FeatureBuilder
 
 M1_COLUMNS = [
     "semilla",
@@ -77,11 +78,14 @@ class M1Model:
         self.seed = seed
         self.C = C
 
+    def _make_builder(self, train: pd.DataFrame) -> FeatureBuilder:
+        return FeatureBuilder().fit(train, self.embedder)
+
     def fit(self, train: pd.DataFrame) -> M1Model:
         _require(train, ["oro"])
         if train.empty:
             raise ValueError("train is empty")
-        self.builder = FeatureBuilder().fit(train, self.embedder)
+        self.builder = self._make_builder(train)
         X = self.builder.transform(train)
         y1 = (train["oro"] != NO).astype(int).to_numpy()
         classes = np.unique(y1)
@@ -147,6 +151,83 @@ class M1Model:
                 )
             )
         return out, probabilities, np.array(abstention)
+
+
+class M2Model(M1Model):
+    """M2: M1 plus the strict listing, rules, POS and provenance."""
+
+    def _make_builder(self, train: pd.DataFrame) -> M2FeatureBuilder:
+        return M2FeatureBuilder().fit(train, self.embedder)
+
+    def fit(self, train: pd.DataFrame) -> M2Model:
+        _require(train, ["oro", *POS_COLUMNS])
+        if train.empty:
+            raise ValueError("train is empty")
+        super().fit(train)
+        positive = train["oro"] != NO
+        self.n_cat = train.loc[positive, "oro"].value_counts().to_dict()
+        return self
+
+    def predict(
+        self, df: pd.DataFrame, margin: float = 0.0
+    ) -> tuple[list[str], np.ndarray, np.ndarray, list[str], np.ndarray]:
+        X = self.builder.transform(df)
+        if self.c1 is None:
+            probabilities = np.full(len(df), self.c1_constant)
+        else:
+            probabilities = self.c1.predict_proba(X)[:, 1]
+        P2 = self.c2.predict_proba(X) if self.c2 is not None else None
+        classes = list(self.c2.classes_) if self.c2 is not None else []
+        out = []
+        abstention = []
+        origin = []
+        review = []
+        for index, unit in enumerate(df["unidad"]):
+            admitted = self.labels.get(unit, [])
+            if not admitted:
+                raise ValueError(
+                    f"unit has no admitted category: {unit}"
+                )
+            if abs(probabilities[index] - 0.5) < margin:
+                out.append(NO)
+                abstention.append(True)
+                origin.append("modelo")
+                review.append(False)
+                continue
+            abstention.append(False)
+            if probabilities[index] < 0.5:
+                out.append(NO)
+                origin.append("modelo")
+                review.append(False)
+                continue
+            if len(admitted) == 1:
+                label = admitted[0]
+                source = "listado"
+            elif P2 is not None:
+                order = [
+                    classes[j]
+                    for j in np.argsort(-P2[index])
+                    if classes[j] in admitted
+                ]
+                if order:
+                    label = order[0]
+                    source = "modelo"
+                else:
+                    label = admitted[0]
+                    source = "listado"
+            else:
+                label = admitted[0]
+                source = "listado"
+            out.append(label)
+            origin.append(source)
+            review.append(self.n_cat.get(label, 0) < MIN_EJEMPLOS)
+        return (
+            out,
+            probabilities,
+            np.array(abstention),
+            origin,
+            np.array(review),
+        )
 
 
 def choose_margin(
