@@ -4,11 +4,13 @@ Anotación automática de conectores y operadores discursivos (Fuentes Rodrígue
 2009) en comentarios de YouTube en español de Chile, para el Fondecyt 11260185.
 
 **Estado:** el piloto está hecho y sus resultados viven en el notebook de Colab
-dentro de `doc/`. El repositorio ya reproduce la tabla publicada de métricas,
-reconstruye las 273 candidatas y reimplementa los baselines B0 y B1 y el modelo
-M1; M2 todavía vive sólo en el notebook y se reimplementa en el siguiente
-slice. Se empieza por entender (`/onboard`) y reproducir, no por escribir un
-modelo nuevo.
+dentro de `doc/`. El repositorio reproduce la tabla publicada de métricas,
+reconstruye las 273 candidatas y reimplementa los baselines B0 y B1, M1 y M2,
+incluidos los márgenes, la trazabilidad y la comparación con las tablas
+publicadas. La siguiente etapa es el paquete de publicación (S6): un comando
+único, la ficha de datos, la ficha de modelo y las instrucciones de
+reproducción. Se empieza por entender (`/onboard`) y reproducir, no por escribir
+un modelo nuevo.
 
 ## El problema
 
