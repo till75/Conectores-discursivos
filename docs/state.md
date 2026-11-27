@@ -1,18 +1,19 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832` and the tree is clean. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. No S5 code has been written.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle has started; the frozen rule set is green.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
 - S4 spec approved: `e585539`; diagnostics report committed: `f9ab832` (`docs/results/0004-m1-replay-diagnostics.md`).
 - S5 prototype evidence collected outside the repo: no-abstention M2 exact, margin path differs.
 - S5 `/learn` complete: author chose A; `docs/design/0005-m2-replay.md` and `docs/learn/04-m2-rules-provenance.md` written and linked from the learn index.
-- S5 spec approved 2026-11-27: `docs/specs/0005-m2-replay.md`; the partial-result criterion for the 27/439 margin mismatch is accepted.
+- S5 spec approved 2026-11-27: `docs/specs/0005-m2-replay.md`; the partial-result criterion for the 27/439 margin mismatch is accepted as a fallback.
+- S5 frozen rule set: `src/conectores/rules.py` and `tests/test_rules.py`; 15 rules, `aplicar_reglas` returns the boolean columns.
 
 ## Next
-1. Start `/tdd` with the frozen rule set.
-2. Complete the S5 TDD cycle: rules, grammar, features, model, predictions, metrics and traceability.
+1. Continue `/tdd` with grammar annotation (`anotar_gramatica`).
+2. Then the M2 feature builder, model, predictions, metrics and traceability.
 3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
 4. Do not use the published margins to choose the margin.
 
