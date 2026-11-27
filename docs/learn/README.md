@@ -11,11 +11,13 @@ the authority; these pages are the teaching material.
 | [01 — Candidate window](01-candidate-window.md) | The ±6-word window, the `[[...]]` marker and the six flags. | S4 |
 | [02 — TF-IDF](02-tf-idf.md) | Term frequency, inverse document frequency, n-grams, L2 normalisation and the three TF-IDF blocks. | S4 |
 | [03 — Window embeddings](03-window-embeddings.md) | What a 384-dimensional window embedding is and how M1 uses it. | S4 |
+| [04 — M2 rules and provenance](04-m2-rules-provenance.md) | The strict listing restriction, the 15 frozen rules, POS features, the rare-category flag, provenance and the margin. | S5 |
 | [S3 — B0 versus B1](../results/0003-baseline-replay-diagnostics.md#the-two-rules-at-a-glance) | The baseline flowchart and six worked examples. | S3 |
 | [S2 — Candidate categories](../results/0002-candidate-replay-diagnostics.md#worked-examples) | One real example of each candidate count. | S2 |
 
 The S4 approach choice is recorded in
-[design note 0004](../design/0004-m1-replay.md).
+[design note 0004](../design/0004-m1-replay.md). The S5 approach choice is
+recorded in [design note 0005](../design/0005-m2-replay.md).
 
 ## How to use these notes
 
