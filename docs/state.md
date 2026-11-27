@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle has started; the frozen rule set, `anotar_gramatica`, `M2FeatureBuilder`, `M2Model`, `choose_margin_for` and `m2_predictions` are green.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle has started; the frozen rule set, `anotar_gramatica`, `M2FeatureBuilder`, `M2Model`, `choose_margin_for`, `m2_predictions` and `replay_m2` are green.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -15,10 +15,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 model: `M2Model` adds the strict listing restriction, provenance, the rare-category flag and the abstention branch; `M1Model` now exposes a private `_make_builder` hook.
 - S5 margin: `choose_margin_for` is the generic grouped-CV margin; `choose_margin` delegates to it and keeps the S4 behaviour.
 - S5 predictions: `m2_predictions` resolves test threads, fits M2 per seed, learns the margin inside training and returns `M2_COLUMNS` without text.
+- S5 replay: `replay_m2` returns predictions, metrics, summary, margins, traceability and the split core/margin deviations; the prediction, systems and summary comparisons are implemented.
 
 ## Next
-1. Continue `/tdd` with `replay_m2`, metrics, summary and traceability.
-2. Then the slow published comparison and the margin investigation.
+1. Continue `/tdd` with the slow published comparison (`test_m2_matches_published_predictions`, `test_m2_matches_published_metrics`, `test_m2_traceability_matches_published`).
+2. Then the published-margin investigation before closing S5.
 3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
 4. Do not use the published margins to choose the margin.
 

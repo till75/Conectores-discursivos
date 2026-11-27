@@ -18,6 +18,7 @@ from conectores.models import (
     m1_predictions,
     m2_predictions,
     replay_m1,
+    replay_m2,
 )
 from conectores.rules import POS_COLUMNS
 
@@ -838,3 +839,97 @@ def test_m2_output_has_no_text():
     assert "ventana" not in result.columns
     assert "author_hash" not in result.columns
     assert not any("@" in str(value) for value in result.to_numpy().ravel())
+
+
+class _ReplayToken:
+    def __init__(self, idx, text, pos):
+        self.idx = idx
+        self.text = text
+        self.pos_ = pos
+
+
+def _replay_nlp(texto):
+    return [_ReplayToken(0, "ya", "ADV")]
+
+
+def _replay_fixture():
+    candidates, reference, listing = _prediction_fixture()
+    candidates = candidates.assign(
+        texto=candidates["ventana"].str.replace(r"\[\[|\]\]", "", regex=True)
+    )
+    candidate_set = CandidateSet(
+        candidates=candidates,
+        undetected=pd.DataFrame(
+            columns=["comment_id", "thread_id", "unidad", "oro"]
+        ),
+        csl_excluded=pd.DataFrame(),
+        second_pieces=pd.DataFrame(),
+        raw_matches=0,
+    )
+    return candidate_set, reference, listing
+
+
+def test_replay_m2_returns_tables():
+    """The replay returns predictions, metrics, summary and provenance."""
+    candidate_set, reference, listing = _replay_fixture()
+
+    result = replay_m2(
+        candidate_set,
+        reference,
+        listing,
+        {0: ["c1"], 1: ["c2"]},
+        {},
+        _fake_embedder,
+        _replay_nlp,
+    )
+
+    assert list(result.predictions.columns) == M2_COLUMNS
+    assert result.predictions.groupby("semilla").size().to_dict() == {
+        0: 3,
+        1: 3,
+    }
+    assert set(result.metrics.sistema) == {"M2", "M2 con abstención"}
+    assert len(result.metrics) == 4
+    assert len(result.summary) == 2
+    assert set(result.margins) == {0, 1}
+    assert set(result.traceability) == {
+        "etiquetas_discursivas",
+        "fijadas_listado",
+        "fijadas_listado_correctas",
+        "elegidas_modelo",
+        "elegidas_modelo_correctas",
+        "revisar_categoria",
+    }
+    assert result.deviations == []
+    assert result.margin_deviations == []
+
+
+def test_replay_m2_reports_core_and_margin_deviations():
+    """Core prediction errors and margin errors land in separate lists."""
+    candidate_set, reference, listing = _replay_fixture()
+    base = (candidate_set, reference, listing, {0: ["c1"]})
+    baseline = replay_m2(*base, {}, _fake_embedder, _replay_nlp)
+    published_predictions = baseline.predictions.copy()
+    actual = published_predictions.loc[0, "M2"]
+    published_predictions.loc[0, "M2"] = (
+        "CON:CIERRE" if actual != "CON:CIERRE" else "CON:ADICIÓN"
+    )
+    published_predictions.loc[0, "abstiene_M2"] = not bool(
+        published_predictions.loc[0, "abstiene_M2"]
+    )
+    published = {
+        "predictions": published_predictions,
+        "systems": baseline.metrics.copy(),
+        "summary": baseline.summary.copy(),
+    }
+
+    result = replay_m2(*base, published, _fake_embedder, _replay_nlp)
+
+    assert any(", M2:" in item for item in result.deviations)
+    assert any(
+        ", abstiene_M2:" in item for item in result.margin_deviations
+    )
+    assert not any(
+        ", abstiene_M2:" in item for item in result.deviations
+    )
+    assert not any(", M2:" in item for item in result.margin_deviations)

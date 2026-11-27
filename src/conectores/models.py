@@ -18,8 +18,15 @@ from conectores.metrics import (
     compute_metrics,
     count_undetected,
     summary_systems,
+    traceability,
 )
-from conectores.rules import MIN_EJEMPLOS, POS_COLUMNS, M2FeatureBuilder
+from conectores.rules import (
+    MIN_EJEMPLOS,
+    NLP,
+    POS_COLUMNS,
+    M2FeatureBuilder,
+    anotar_gramatica,
+)
 
 M1_COLUMNS = [
     "semilla",
@@ -69,6 +76,15 @@ M2_INPUT_COLUMNS = [
     "tok_sig",
 ]
 
+TRACEABILITY_TARGET = {
+    "etiquetas_discursivas": 91,
+    "fijadas_listado": 58,
+    "fijadas_listado_correctas": 34,
+    "elegidas_modelo": 33,
+    "elegidas_modelo_correctas": 20,
+    "revisar_categoria": 43,
+}
+
 METRIC_COLUMNS = [
     "F1_etiqueta",
     "F1_uso_discursivo",
@@ -87,6 +103,19 @@ class M1Result:
     summary: pd.DataFrame
     margins: Mapping[int, float]
     deviations: list[str]
+
+
+@dataclass(frozen=True)
+class M2Result:
+    """The rebuilt M2 tables and their core and margin deviations."""
+
+    predictions: pd.DataFrame
+    metrics: pd.DataFrame
+    summary: pd.DataFrame
+    margins: Mapping[int, float]
+    traceability: Mapping[str, int]
+    deviations: list[str]
+    margin_deviations: list[str]
 
 
 def _require(
@@ -384,14 +413,14 @@ def m1_predictions(
     return predictions
 
 
-def m2_predictions(
+def _m2_predictions_and_margins(
     candidates: pd.DataFrame,
     reference: pd.DataFrame,
     listing: pd.DataFrame,
     test_ids: Mapping[int, Sequence[str]],
     embedder: Embedder,
-) -> pd.DataFrame:
-    """Return one M2 row per test candidate per frozen split."""
+) -> tuple[pd.DataFrame, dict[int, float]]:
+    """Return the M2 rows and the learned margin for each seed."""
     _require(candidates, M2_INPUT_COLUMNS, "candidates")
     _require(reference, ["comment_id", "thread_id"], "reference")
     _require(
@@ -404,6 +433,7 @@ def m2_predictions(
         zip(reference["comment_id"], reference["thread_id"], strict=True)
     )
     frames = []
+    margins = {}
     for seed, ids in test_ids.items():
         seed = int(seed)
         threads = {
@@ -422,6 +452,7 @@ def m2_predictions(
         margin = choose_margin_for(
             M2Model, train, labels, embedder, seed=seed
         )
+        margins[seed] = margin
         abstiene = np.abs(probabilities - 0.5) < margin
         frames.append(
             test.assign(
@@ -434,8 +465,153 @@ def m2_predictions(
             )
         )
     if not frames:
-        return pd.DataFrame(columns=M2_COLUMNS)
-    return pd.concat(frames, ignore_index=True)[M2_COLUMNS]
+        return pd.DataFrame(columns=M2_COLUMNS), margins
+    return pd.concat(frames, ignore_index=True)[M2_COLUMNS], margins
+
+
+def m2_predictions(
+    candidates: pd.DataFrame,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+    embedder: Embedder,
+) -> pd.DataFrame:
+    """Return one M2 row per test candidate per frozen split."""
+    predictions, _ = _m2_predictions_and_margins(
+        candidates, reference, listing, test_ids, embedder
+    )
+    return predictions
+
+
+def replay_m2(
+    candidate_set,
+    reference: pd.DataFrame,
+    listing: pd.DataFrame,
+    test_ids: Mapping[int, Sequence[str]],
+    published: Mapping[str, pd.DataFrame],
+    embedder: Embedder,
+    nlp: NLP,
+) -> M2Result:
+    """Rebuild M2 and compare it with the published tables."""
+    candidates = anotar_gramatica(candidate_set.candidates, nlp)
+    predictions, margins = _m2_predictions_and_margins(
+        candidates, reference, listing, test_ids, embedder
+    )
+    totals, _ = count_undetected(
+        candidate_set.undetected, reference, test_ids
+    )
+    rows = []
+    for seed, group in predictions.groupby("semilla", sort=True):
+        seed = int(seed)
+        n_undetected = totals.get(seed, 0)
+        m2 = compute_metrics(group["oro"], group["M2"], n_undetected)
+        rows.append(
+            {
+                "sistema": "M2",
+                "semilla": seed,
+                "F1_etiqueta": m2.f1_label,
+                "F1_uso_discursivo": m2.f1_discourse,
+                "F1_macro_CON_OP": m2.f1_macro,
+                "precision_etiqueta": m2.precision,
+                "cobertura_etiqueta": m2.coverage,
+                "abstencion": np.nan,
+                "margen": np.nan,
+            }
+        )
+        kept = ~group["abstiene_M2"].to_numpy()
+        m2a = compute_metrics(
+            group["oro"][kept], group["M2"][kept], n_undetected
+        )
+        rows.append(
+            {
+                "sistema": "M2 con abstención",
+                "semilla": seed,
+                "F1_etiqueta": m2a.f1_label,
+                "F1_uso_discursivo": m2a.f1_discourse,
+                "F1_macro_CON_OP": m2a.f1_macro,
+                "precision_etiqueta": m2a.precision,
+                "cobertura_etiqueta": m2a.coverage,
+                "abstencion": float(group["abstiene_M2"].mean()),
+                "margen": margins[seed],
+            }
+        )
+    metrics = pd.DataFrame(
+        rows,
+        columns=[
+            "sistema",
+            "semilla",
+            *METRIC_COLUMNS,
+            "abstencion",
+            "margen",
+        ],
+    )
+    summary = summary_systems(metrics)
+    trace = traceability(predictions)
+    deviations = []
+    margin_deviations = []
+
+    published_predictions = published.get("predictions")
+    if published_predictions is not None and not published_predictions.empty:
+        core, margin = _compare_m2_predictions(
+            predictions, published_predictions
+        )
+        deviations.extend(core)
+        margin_deviations.extend(margin)
+
+    published_systems = published.get("systems")
+    if published_systems is not None and not published_systems.empty:
+        for system, target in (
+            ("M2", deviations),
+            ("M2 con abstención", margin_deviations),
+        ):
+            filtered = published_systems[
+                published_systems["sistema"] == system
+            ]
+            if not filtered.empty:
+                target.extend(
+                    compare_tables(
+                        metrics[metrics["sistema"] == system],
+                        filtered,
+                        ["sistema", "semilla"],
+                    )
+                )
+
+    published_summary = published.get("summary")
+    if published_summary is not None and not published_summary.empty:
+        for system, target in (
+            ("M2", deviations),
+            ("M2 con abstención", margin_deviations),
+        ):
+            filtered = published_summary[
+                published_summary["sistema"] == system
+            ]
+            if not filtered.empty:
+                target.extend(
+                    compare_tables(
+                        summary[summary["sistema"] == system],
+                        filtered,
+                        ["sistema"],
+                    )
+                )
+
+    if published:
+        for key, expected in TRACEABILITY_TARGET.items():
+            actual = trace.get(key)
+            if actual != expected:
+                deviations.append(
+                    f"traceability, {key}: replay {actual!r} "
+                    f"!= published {expected!r}"
+                )
+
+    return M2Result(
+        predictions=predictions,
+        metrics=metrics,
+        summary=summary,
+        margins=margins,
+        traceability=trace,
+        deviations=deviations,
+        margin_deviations=margin_deviations,
+    )
 
 
 def _format_key(keys: Sequence[str], key: Sequence[object]) -> str:
@@ -443,6 +619,57 @@ def _format_key(keys: Sequence[str], key: Sequence[object]) -> str:
     return ", ".join(
         f"{name}={value}" for name, value in zip(keys, key, strict=True)
     )
+
+
+def _compare_m2_predictions(
+    rebuilt: pd.DataFrame, published: pd.DataFrame
+) -> tuple[list[str], list[str]]:
+    """Return the core and margin deviations for the M2 predictions."""
+    keys = ["semilla", "comment_id", "unidad", "inicio"]
+    merged = rebuilt.merge(
+        published,
+        on=keys,
+        how="outer",
+        suffixes=("_replay", "_published"),
+        indicator=True,
+    )
+    deviations = []
+    margin_deviations = []
+    for _, row in merged.iterrows():
+        key = _format_key(
+            keys, tuple(row[column] for column in keys)
+        )
+        if row["_merge"] == "left_only":
+            deviations.append(f"{key}: missing from published")
+            continue
+        if row["_merge"] == "right_only":
+            deviations.append(f"{key}: missing from replay")
+            continue
+        for column in ("oro", "M2", "origen_M2", "revisar_categoria"):
+            actual = row[f"{column}_replay"]
+            expected = row[f"{column}_published"]
+            if actual != expected:
+                deviations.append(
+                    f"{key}, {column}: replay {actual!r} "
+                    f"!= published {expected!r}"
+                )
+        difference = abs(
+            float(row["p_M2_replay"]) - float(row["p_M2_published"])
+        )
+        if difference > 1e-5:
+            deviations.append(
+                f"{key}, p_M2: replay {row['p_M2_replay']!r} "
+                f"!= published {row['p_M2_published']!r}"
+            )
+        if bool(row["abstiene_M2_replay"]) != bool(
+            row["abstiene_M2_published"]
+        ):
+            margin_deviations.append(
+                f"{key}, abstiene_M2: replay "
+                f"{row['abstiene_M2_replay']!r} != published "
+                f"{row['abstiene_M2_published']!r}"
+            )
+    return deviations, margin_deviations
 
 
 def _compare_m1_predictions(
