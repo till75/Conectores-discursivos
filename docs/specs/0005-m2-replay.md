@@ -373,11 +373,12 @@ The test split is never used. The default `max_abstention=0.2` matches
 `gate.toml`. The margin is the same protocol for M1 and M2; only the model class
 changes.
 
-The published M2 margins are `0.15/0.10/0.20/0.10/0.20`. The current prototype
-learns `0.20/0.15/0.15/0.15/0.20` from the same training rows. No tested
-training-only CV variant reproduces the published margins. The spec does not
-copy the published margins; it records the mismatch and leaves the
-investigation in S5.
+The published M2 margins are `0.15/0.10/0.20/0.10/0.20`. `_group_kfold_splits`
+reproduces the pre-stable `GroupKFold` tie-break used by the notebook, so the
+replay learns those margins. The earlier prototype learned
+`0.20/0.15/0.15/0.15/0.20` because scikit-learn 1.9.1 sorts equal-sized groups
+stably. The grouped-CV protocol, grid, 20% cap and smaller-margin tie rule are
+unchanged; the spec does not copy the published margins.
 
 ### Per-seed predictions
 
@@ -548,11 +549,12 @@ The prototype margins are `0.20/0.15/0.15/0.15/0.20`; 27 of 439
    counted as discourse labels. *Failure:* a changed origin or review flag
    changes the counts and is named.
 
-9. **Abstention rows and partial outcome.** The `M2 con abstención` rows are
-   produced from the learned margins and compared with the published rows.
-   *Happy:* if the learned margins match, `margin_deviations == []`. *Boundary:*
-   if they differ, the rows are still produced, the `abstiene_M2` mismatches are
-   named, and the slice is partial, not fail. *Failure:* choosing the margin on
+9. **Abstention rows.** The `M2 con abstención` rows are produced from the
+   learned margins and compared with the published rows. *Happy:* the real
+   inputs reproduce the published margins and `margin_deviations == []`.
+   *Boundary:* if a future library change makes them differ, the rows are still
+   produced, the `abstiene_M2` mismatches are named, and the slice is partial,
+   not fail; the partial branch is a fallback. *Failure:* choosing the margin on
    the test labels changes the margin and fails the leakage test; using the
    published margins without an ADR fails the independence check.
 
@@ -660,10 +662,12 @@ changing it needs an ADR.
   `M2 con abstención` rows differ on 27/439 rows. The spec defines a partial
   outcome instead of silently relaxing the plan. `/spec-review` must approve
   this or require an ADR.
-- **Margin cause.** The published margins are not reproduced by the current
-  notebook path or by the tested CV variants. The likely causes are library
-  drift (local scikit-learn 1.9.1) or an older margin path. S5 investigates;
-  the spec does not choose the published margins.
+- **Margin cause (resolved 2026-11-27).** The mismatch was scikit-learn's
+  `GroupKFold` tie-break change: older versions sorted equal-sized groups with
+  unstable `np.argsort`, while 1.9.1 uses `kind="stable"`.
+  `models._group_kfold_splits` reproduces the old tie-break; the M1 and M2
+  margins match and `margin_deviations` is empty. The protocol is unchanged, so
+  no ADR is needed.
 - **API order.** The notebook returns `(labels, abstention, probabilities,
   origin, review)`; the repo returns `(labels, probabilities, abstention,
   origin, review)` for consistency with S4. The values are unchanged.
@@ -696,6 +700,11 @@ investigate the published-margin mismatch and fix it before closing S5 if
 possible. If the cause cannot be found or fixed, close S5 as partial with the
 27/439 `abstiene_M2` mismatch and a follow-up. Treating partial as a pass, or
 using the published margins, needs an ADR.
+
+Resolved 2026-11-27: the mismatch was scikit-learn's `GroupKFold` tie-break
+change. `_group_kfold_splits` reproduces the pre-stable behaviour, the real
+inputs now reproduce the published margins, and the partial fallback is not
+used.
 
 **Decision 2 — S4 prediction return order (2026-11-27).** `M2Model.predict`
 returns `(labels, probabilities, abstention, origin, review)`, not the

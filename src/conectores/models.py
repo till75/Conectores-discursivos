@@ -8,7 +8,6 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GroupKFold
 
 from conectores.baselines import listing_label_map
 from conectores.candidates import NO
@@ -294,6 +293,38 @@ class M2Model(M1Model):
         )
 
 
+def _group_kfold_splits(
+    groups: Sequence[object], n_splits: int = 5
+):
+    """Yield GroupKFold folds with the pre-stable group-size tie-break.
+
+    The published notebook ran with an older scikit-learn whose
+    ``GroupKFold`` sorted equal-sized groups with ``np.argsort`` (quicksort)
+    before reversing the order. Newer scikit-learn sorts the sizes stably.
+    The difference changes the folds and the learned M2 margins, so this
+    helper keeps the published behaviour explicit.
+    """
+    group_values = np.asarray(groups)
+    unique_groups, group_index = np.unique(group_values, return_inverse=True)
+    if n_splits > len(unique_groups):
+        raise ValueError(
+            f"Cannot have number of splits n_splits={n_splits} greater "
+            f"than the number of groups: {len(unique_groups)}."
+        )
+    group_sizes = np.bincount(group_index)
+    order = np.argsort(group_sizes)[::-1]
+    sorted_sizes = group_sizes[order]
+    fold_sizes = np.zeros(n_splits)
+    group_to_fold = np.zeros(len(unique_groups), dtype=int)
+    for position, size in enumerate(sorted_sizes):
+        lightest_fold = int(np.argmin(fold_sizes))
+        fold_sizes[lightest_fold] += size
+        group_to_fold[order[position]] = lightest_fold
+    fold_ids = group_to_fold[group_index]
+    for fold in range(n_splits):
+        yield np.where(fold_ids != fold)[0], np.where(fold_ids == fold)[0]
+
+
 def choose_margin_for(
     model_cls: type[M1Model],
     train: pd.DataFrame,
@@ -303,11 +334,8 @@ def choose_margin_for(
     max_abstention: float = 0.2,
 ) -> float:
     """Return the margin chosen by grouped CV on training."""
-    folds = GroupKFold(n_splits=5)
     probabilities = np.zeros(len(train))
-    for fit_index, hold_index in folds.split(
-        train, groups=train["thread_id"]
-    ):
+    for fit_index, hold_index in _group_kfold_splits(train["thread_id"]):
         model = model_cls(labels, embedder, seed=seed).fit(
             train.iloc[fit_index]
         )

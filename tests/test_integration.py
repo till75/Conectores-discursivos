@@ -410,11 +410,14 @@ def test_m2_matches_published_metrics(m2_replay):
         0.486,
     ]
     assert len(abstention_rows) == 5
-    assert result.margin_deviations
-    assert any(
-        "abstiene_M2" in deviation
-        for deviation in result.margin_deviations
-    )
+    assert dict(result.margins) == {
+        0: 0.15,
+        1: 0.10,
+        2: 0.20,
+        3: 0.10,
+        4: 0.20,
+    }
+    assert result.margin_deviations == []
     m2_summary = result.summary[result.summary["sistema"] == "M2"].iloc[0]
     assert round(m2_summary["F1_etiqueta_mean"], 3) == 0.483
 

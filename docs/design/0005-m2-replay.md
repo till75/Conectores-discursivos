@@ -90,6 +90,23 @@ violation of the cap.
   `GroupKFold`.
 - If the team wants a rule-first M3, that is a new slice, not S5.
 
+## Resolution (2026-11-27)
+
+The margin mismatch was library drift in `GroupKFold`, not a different
+protocol. The published notebook ran with an older scikit-learn whose
+`GroupKFold` sorted equal-sized groups with `np.argsort` (quicksort) before
+reversing the order. Scikit-learn 1.9.1 sorts the sizes with
+`kind="stable"`. The different tie-break changes the folds, the CV
+probabilities and the learned M2 margins.
+
+`models._group_kfold_splits` now reproduces the pre-stable tie-break
+explicitly. The M1 margins are unchanged (0.10/0.10/0.10/0.05/0.15), and the
+M2 margins now match the published values
+(0.15/0.10/0.20/0.10/0.20). The `M2 con abstención` rows match and
+`margin_deviations` is empty on the real inputs. The grouped-CV protocol,
+grid, 20% cap and smaller-margin tie rule are unchanged, so no ADR is needed;
+the partial fallback in the spec is not used.
+
 ## Sources
 
 `doc/equipo11_B0_B1_M1_M2.ipynb` (M2 class, `REGLAS`, `anotar_gramatica`,
