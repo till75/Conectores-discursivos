@@ -13,6 +13,7 @@ from conectores.models import (
     M1Model,
     M2Model,
     choose_margin,
+    choose_margin_for,
     m1_predictions,
     replay_m1,
 )
@@ -234,6 +235,20 @@ def test_choose_margin_tie_keeps_smaller(monkeypatch):
     monkeypatch.setattr(models, "M1Model", _ProbModel)
 
     margin = choose_margin(_margin_train(), LABELS, _fake_embedder)
+
+    assert margin == 0.05
+
+
+def test_choose_margin_for_uses_training_only():
+    """The generic margin function has no test input."""
+    assert "test" not in inspect.signature(choose_margin_for).parameters
+
+
+def test_choose_margin_for_tie_keeps_smaller():
+    """A tie between 0.05 and 0.10 keeps the smaller margin."""
+    margin = choose_margin_for(
+        _ProbModel, _margin_train(), LABELS, _fake_embedder
+    )
 
     assert margin == 0.05
 

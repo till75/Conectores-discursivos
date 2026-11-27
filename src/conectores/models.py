@@ -230,20 +230,23 @@ class M2Model(M1Model):
         )
 
 
-def choose_margin(
+def choose_margin_for(
+    model_cls: type[M1Model],
     train: pd.DataFrame,
     labels: Mapping[str, Sequence[str]],
     embedder: Embedder,
     seed: int = 0,
     max_abstention: float = 0.2,
 ) -> float:
-    """Return the margin chosen by grouped cross-validation on training."""
+    """Return the margin chosen by grouped CV on training."""
     folds = GroupKFold(n_splits=5)
     probabilities = np.zeros(len(train))
     for fit_index, hold_index in folds.split(
         train, groups=train["thread_id"]
     ):
-        model = M1Model(labels, embedder, seed=seed).fit(train.iloc[fit_index])
+        model = model_cls(labels, embedder, seed=seed).fit(
+            train.iloc[fit_index]
+        )
         probabilities[hold_index] = model.prob(train.iloc[hold_index])
 
     truth = (train["oro"] != NO).to_numpy()
@@ -263,6 +266,19 @@ def choose_margin(
         if f1 > best_f1 + 1e-9:
             best_margin, best_f1 = round(float(margin), 2), f1
     return best_margin
+
+
+def choose_margin(
+    train: pd.DataFrame,
+    labels: Mapping[str, Sequence[str]],
+    embedder: Embedder,
+    seed: int = 0,
+    max_abstention: float = 0.2,
+) -> float:
+    """Return the margin chosen by grouped cross-validation on training."""
+    return choose_margin_for(
+        M1Model, train, labels, embedder, seed, max_abstention
+    )
 
 
 def _m1_predictions_and_margins(
