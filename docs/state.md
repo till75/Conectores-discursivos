@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle has started; the frozen rule set and `anotar_gramatica` are green.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) `/learn` is complete and the spec is approved: approach A, the faithful port with the margin learned by grouped CV inside training. The S5 TDD cycle has started; the frozen rule set, `anotar_gramatica` and `M2FeatureBuilder` are green.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -11,10 +11,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 spec approved 2026-11-27: `docs/specs/0005-m2-replay.md`; the partial-result criterion for the 27/439 margin mismatch is accepted as a fallback.
 - S5 frozen rule set: `src/conectores/rules.py` and `tests/test_rules.py`; 15 rules, `aplicar_reglas` returns the boolean columns.
 - S5 grammar annotation: `anotar_gramatica` adds the five POS columns from character offsets, with a text cache and `INICIO`/`FIN`/`X` fallbacks.
+- S5 feature builder: `M2FeatureBuilder` appends the 15 rule columns and the POS `DictVectorizer` block to the S4 matrix; the POS vocabulary is fitted on training only.
 
 ## Next
-1. Continue `/tdd` with the M2 feature builder.
-2. Then the M2 model, predictions, metrics and traceability.
+1. Continue `/tdd` with `M2Model` (strict listing, provenance, rare flag, abstention).
+2. Then `choose_margin_for`, `m2_predictions`, `replay_m2`, metrics and traceability.
 3. After the cycle, investigate the published-margin mismatch and fix it before closing S5 if possible; otherwise close S5 as partial with the 27/439 mismatch recorded.
 4. Do not use the published margins to choose the margin.
 

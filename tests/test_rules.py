@@ -1,11 +1,14 @@
 """Unit tests for the frozen M2 context rules."""
 
+import numpy as np
 import pandas as pd
 import pytest
 
+from conectores.features import FeatureBuilder
 from conectores.rules import (
     POS_COLUMNS,
     RULE_NAMES,
+    M2FeatureBuilder,
     anotar_gramatica,
     aplicar_reglas,
 )
@@ -252,3 +255,104 @@ def test_anotar_gramatica_requires_columns(column):
 
     with pytest.raises(ValueError, match=column):
         anotar_gramatica(cand, nlp)
+
+
+def _fake_embedder(texts):
+    return np.ones((len(texts), 384))
+
+
+def _m2_frame(**overrides):
+    row = {
+        "unidad": "ya",
+        "inicio": 0,
+        "texto": "ya, pero",
+        "ventana": "[[ya]] , pero",
+        "coma_antes": False,
+        "coma_despues": True,
+        "inicio_comentario": True,
+        "inicio_oracion": False,
+        "fin_enunciado": False,
+        "is_reply": False,
+        "pos_u": "ADV",
+        "pos_ant": "INICIO",
+        "pos_sig": "PUNCT",
+        "tok_ant": "",
+        "tok_sig": ",",
+    }
+    return pd.DataFrame([{**row, **overrides}])
+
+
+def _m2_train():
+    return pd.concat(
+        [
+            _m2_frame(),
+            _m2_frame(
+                unidad="pero",
+                inicio=4,
+                ventana="ya , [[pero]]",
+                pos_u="CCONJ",
+                pos_ant="PUNCT",
+                pos_sig="FIN",
+                tok_ant=",",
+                tok_sig="",
+            ),
+        ],
+        ignore_index=True,
+    )
+
+
+def test_m2_feature_builder_order():
+    train = _m2_train()
+    builder = M2FeatureBuilder()
+    assert builder.fit(train, _fake_embedder) is builder
+
+    base = FeatureBuilder().fit(train, _fake_embedder)
+    matrix = builder.transform(train).toarray()
+    base_matrix = base.transform(train).toarray()
+    rules = aplicar_reglas(train).astype(float).to_numpy()
+    base_width = base_matrix.shape[1]
+    rule_width = len(RULE_NAMES)
+
+    assert matrix.shape[0] == len(train)
+    assert matrix.shape[1] > base_width + rule_width
+    assert np.array_equal(matrix[:, :base_width], base_matrix)
+    assert np.array_equal(
+        matrix[:, base_width : base_width + rule_width],
+        rules,
+    )
+
+    names = list(builder.dv.get_feature_names_out())
+    assert "u=ADV" in names
+    assert "ant=INICIO" in names
+    assert "sig=PUNCT" in names
+    assert "ya|sig=PUNCT" in names
+    assert "ya|ant=INICIO" in names
+
+
+def test_m2_feature_builder_unseen_pos():
+    train = _m2_train()
+    builder = M2FeatureBuilder().fit(train, _fake_embedder)
+    seen = builder.transform(train.iloc[[0]]).toarray()
+    unseen = builder.transform(_m2_frame(pos_sig="NOUN")).toarray()
+    base_width = FeatureBuilder().fit(
+        train, _fake_embedder
+    ).transform(train).shape[1]
+    pos_start = base_width + len(RULE_NAMES)
+
+    assert seen.shape[1] > pos_start
+    assert unseen.shape[1] == seen.shape[1]
+
+    names = list(builder.dv.get_feature_names_out())
+    assert "sig=NOUN" not in names
+    assert "ya|sig=NOUN" not in names
+    for name in ("sig=PUNCT", "ya|sig=PUNCT"):
+        assert unseen[0, pos_start + names.index(name)] == 0
+    for name in ("u=ADV", "ant=INICIO", "ya|ant=INICIO"):
+        assert unseen[0, pos_start + names.index(name)] == 1
+
+
+def test_m2_feature_builder_requires_pos_columns():
+    train = _m2_frame().drop(columns=["pos_sig"])
+
+    with pytest.raises(ValueError, match="pos_sig"):
+        M2FeatureBuilder().fit(train, _fake_embedder)

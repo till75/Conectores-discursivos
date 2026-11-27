@@ -7,6 +7,10 @@ from collections.abc import Callable, Sequence
 from typing import Any, Protocol
 
 import pandas as pd
+from scipy.sparse import csr_matrix, hstack
+from sklearn.feature_extraction import DictVectorizer
+
+from conectores.features import Embedder, FeatureBuilder
 
 Rule = Callable[[Any], bool]
 
@@ -90,6 +94,51 @@ def anotar_gramatica(cand: pd.DataFrame, nlp: NLP) -> pd.DataFrame:
         ],
         axis=1,
     )
+
+
+def _require_pos(df: pd.DataFrame) -> None:
+    for column in ("unidad", "pos_u", "pos_ant", "pos_sig"):
+        if column not in df.columns:
+            raise ValueError(
+                f"candidates is missing required column: {column}"
+            )
+
+
+class M2FeatureBuilder:
+    """Build the M2 feature matrix: M1 blocks, rules and POS."""
+
+    def fit(
+        self, train: pd.DataFrame, embedder: Embedder
+    ) -> M2FeatureBuilder:
+        _require_pos(train)
+        self.base = FeatureBuilder().fit(train, embedder)
+        self.dv = DictVectorizer().fit(self._pos_dicts(train))
+        return self
+
+    def transform(self, df: pd.DataFrame) -> csr_matrix:
+        base = self.base.transform(df)
+        rules = csr_matrix(aplicar_reglas(df).astype(float).to_numpy())
+        pos = self.dv.transform(self._pos_dicts(df))
+        return hstack([base, rules, pos]).tocsr()
+
+    @staticmethod
+    def _pos_dicts(df: pd.DataFrame) -> list[dict[str, int]]:
+        return [
+            {
+                f"u={pos_u}": 1,
+                f"ant={pos_ant}": 1,
+                f"sig={pos_sig}": 1,
+                f"{unidad}|sig={pos_sig}": 1,
+                f"{unidad}|ant={pos_ant}": 1,
+            }
+            for unidad, pos_u, pos_ant, pos_sig in zip(
+                df["unidad"],
+                df["pos_u"],
+                df["pos_ant"],
+                df["pos_sig"],
+                strict=True,
+            )
+        ]
 
 
 def _pregunta(texto: str, inicio: int) -> bool:
