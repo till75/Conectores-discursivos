@@ -42,17 +42,35 @@ def test_model_card_has_required_sections():
     text = MODEL_CARD.read_text(encoding="utf-8")
 
     for heading in (
-        "## Sistemas",
-        "## Rasgos",
-        "## Entrenamiento",
-        "## Métricas",
-        "## Resultados",
+        "## Detalles del modelo",
+        "### Sistemas",
         "## Uso previsto",
+        "## Factores",
+        "## Métricas y umbrales",
+        "## Datos de entrenamiento",
+        "## Datos de evaluación",
+        "## Análisis cuantitativos",
+        "## Riesgos, ética y recomendaciones",
         "## Limitaciones",
+        "## Especificaciones técnicas",
+        "## Impacto ambiental",
         "## Privacidad",
+        "## Cita, licencia y contacto",
+        "## Reproducción",
     ):
         assert heading in text
-    for value in ("0.483", "0.513", "0.328", "91/58/34/33/20/43"):
+    for value in (
+        "0.483",
+        "0.513",
+        "0.328",
+        "91/58/34/33/20/43",
+        "2026-11-27",
+        "0.1.0",
+        "Fondecyt 11260185",
+        "19 hilos",
+        "15,6 %",
+        "pendiente",
+    ):
         assert value in text
 
 
