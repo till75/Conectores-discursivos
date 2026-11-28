@@ -11,7 +11,8 @@ comentarios de YouTube en español de Chile.
 | Campo | Valor |
 |---|---|
 | Desarrollado por | Equipo 11: Diana Aguilera Fredes, Vannia Fernández-Mutis y Till Seyfarth |
-| Financiado por | Fondecyt 11260185 |
+| Proyecto marco | Fondecyt 11260185 |
+| Contexto | Proyecto de capstone (fin de curso) del Equipo 11; no se registra financiamiento individual en esta ficha |
 | Versión del paquete | 0.1.0 (S6; código `8686ba7`) |
 | Fecha de la ficha | 2026-11-27 |
 | Tipo | Pipeline de clasificación de ocurrencias: regresión logística en dos pasos, reglas congeladas, POS de spaCy y embeddings congelados |

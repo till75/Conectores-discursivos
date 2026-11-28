@@ -82,6 +82,8 @@ def test_model_card_has_required_sections():
         "2026-11-27",
         "0.1.0",
         "Fondecyt 11260185",
+        "Proyecto marco",
+        "Proyecto de capstone",
         "19 hilos",
         "15,6 %",
         "pendiente",
