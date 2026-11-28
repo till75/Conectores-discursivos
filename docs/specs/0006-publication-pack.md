@@ -330,6 +330,11 @@ does not change the protocol. Any protocol change needs an ADR before code.
 - The pipeline's `--check` compares published tables; a future library change
   that moves a result will fail the check and must be investigated, not
   silently relaxed.
+- **Bootstrap order (resolved 2026-11-27).** The published prediction table
+  defines the frozen row/thread order used by the bootstrap RNG. The rebuilt
+  frame is reordered to that key order before the interval calculation, without
+  reading any published label or probability. Point predictions, systems and
+  summary are order-independent; the intervals now match the published rows.
 
 ## Rough size
 
@@ -367,8 +372,9 @@ diagnostic report. About 900 lines.
 
 - The S2–S5 builders and the S1 replay are the reference implementation; S6
   composes them and does not add a model.
-- The published tables are comparison targets only; they are never used to
-  build the replay.
+- The published prediction values are comparison targets only; the frozen
+  published row order is used to reproduce the thread-bootstrap RNG order. No
+  published label or probability is used to build a prediction.
 - The summary output is flat; the comparison reads the published header shape.
 - The data card and model card contain no comment text.
 - `doc/` is read-only and gitignored; the output directory is local.

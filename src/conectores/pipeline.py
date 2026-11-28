@@ -112,6 +112,9 @@ def run_pipeline(
     predictions = combine_predictions(
         baselines, m1_result.predictions, m2_result.predictions
     )
+    predictions = _order_like_published(
+        predictions, published.get("predictions")
+    )
     margins = {}
     for seed, margin in m1_result.margins.items():
         margins[(seed, "M1 con abstención")] = margin
@@ -307,9 +310,28 @@ def combine_predictions(
             or row["thread_id"] != row["thread_id_m2"]
         ):
             raise ValueError(f"predictions disagree on thread_id: {key}")
-    return merged.sort_values(MERGE_KEYS).reset_index(drop=True)[
-        PIPELINE_COLUMNS
-    ]
+    return merged.reset_index(drop=True)[PIPELINE_COLUMNS]
+
+
+def _order_like_published(
+    predictions: pd.DataFrame, published: pd.DataFrame | None
+) -> pd.DataFrame:
+    """Use the frozen published row order for the thread bootstrap."""
+    if published is None or published.empty:
+        return predictions
+    order = (
+        published[MERGE_KEYS]
+        .reset_index()
+        .rename(columns={"index": "_order"})
+    )
+    ordered = predictions.merge(order, on=MERGE_KEYS, how="left")
+    if ordered["_order"].isna().any():
+        return predictions
+    return (
+        ordered.sort_values("_order")
+        .drop(columns="_order")
+        .reset_index(drop=True)
+    )
 
 
 def _compare_predictions(

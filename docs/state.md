@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, the combined public frame, the pipeline composition, the writer/CLI, the prediction/privacy checks, the data card, the model card and the README reproduction section are green. The slow end-to-end test and the S6 diagnostic report remain.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) is implemented and the slow end-to-end test is green. The only remaining work is the S6 diagnostic report and approval.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -27,11 +27,12 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S6 output writer and CLI: `write_pipeline_outputs` writes the seven public files and the report; `main` reads the inputs, loads the frozen models, runs the pipeline, writes the outputs and returns 1 on deviations or privacy mentions. The tests use synthetic files and monkeypatched models.
 - S6 prediction and privacy checks: `_compare_predictions` names missing or changed core cells and probabilities; `_privacy_mentions` counts `@name` but allows `@USER`; `run_pipeline` adds a privacy deviation when the count is non-zero.
 - S6 documentation: `docs/data-card.md`, `docs/model-card.md` and the README `## Reproducción` section; `tests/test_docs.py` checks the sections, counts and commands.
+- S6 slow end-to-end: `test_pipeline_end_to_end` runs the real CLI and writes the full pack with zero deviations and zero privacy mentions. The rebuilt frame is ordered by the frozen published keys before the bootstrap; that reproduces the 15 published intervals without reading published values.
+- S6 evidence: 139 default tests and 14 slow tests pass; `ruff check .` clean.
 
 ## Next
-1. Continue `/tdd` with the slow end-to-end pipeline test.
-2. Then the S6 diagnostic report and final docs.
-3. Finish with approval.
+1. Write `docs/results/0006-publication-pack-diagnostics.md` with the end-to-end evidence.
+2. Commit the final S6 docs and stop for approval.
 
 ## Open questions
 - The `inicio_oracion` newline rule, the 20-candidate audit and the documentation privacy exceptions remain open.

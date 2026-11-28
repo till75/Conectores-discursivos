@@ -22,6 +22,8 @@ from conectores.candidates import (
 from conectores.features import sentence_embedder
 from conectores.metrics import count_undetected, main
 from conectores.models import replay_m1, replay_m2
+from conectores.pipeline import PIPELINE_COLUMNS
+from conectores.pipeline import main as pipeline_main
 from conectores.rules import load_nlp
 
 DOC = Path(__file__).resolve().parents[1] / "doc"
@@ -432,6 +434,44 @@ def test_m2_traceability_matches_published(m2_replay):
         "elegidas_modelo_correctas": 20,
         "revisar_categoria": 43,
     }
+
+
+def test_pipeline_end_to_end(tmp_path):
+    """The publication pipeline writes the full pack with zero deviations."""
+    publicable = _extract_publicable(tmp_path)
+    output = tmp_path / "output"
+
+    code = pipeline_main(
+        [
+            "--reference",
+            str(REFERENCE),
+            "--listing",
+            str(LISTING),
+            "--csl",
+            str(CSL),
+            "--test-ids",
+            str(publicable / "test_congelado"),
+            "--hashes",
+            str(publicable / "test_congelado" / "hashes.json"),
+            "--published",
+            str(publicable),
+            "--output",
+            str(output),
+            "--check",
+        ]
+    )
+
+    assert code == 0
+    predictions = pd.read_csv(output / "predicciones_test.csv")
+    assert list(predictions.columns) == PIPELINE_COLUMNS
+    assert len(predictions) == 439
+    assert len(pd.read_csv(output / "resultados_semillas.csv")) == 30
+    assert len(pd.read_csv(output / "resumen_sistemas.csv")) == 6
+    assert len(pd.read_csv(output / "intervalos_confianza.csv")) == 15
+    assert len(pd.read_csv(output / "diagnosticos.csv")) == 5
+    report = (output / "pipeline_report.md").read_text(encoding="utf-8")
+    assert "Deviations: 0" in report
+    assert "Privacy mentions: 0" in report
 
 
 def test_replay_perturbed_cell_fails(tmp_path):

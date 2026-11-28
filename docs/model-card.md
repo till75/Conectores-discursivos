@@ -53,7 +53,9 @@ ordenan con `np.argsort` inestable antes de invertir el orden. La versión
 La métrica primaria es F1 de etiqueta completa. También se reportan F1 de uso
 discursivo, F1 macro CON/OP, precisión y cobertura. La cobertura incluye como
 falsos negativos las etiquetas que el listado no detecta. Los intervalos se
-calculan por bootstrap de hilos.
+calculan por bootstrap de hilos. El orden de filas del test publicado fija el
+orden de remuestreo; no se leen etiquetas ni probabilidades publicadas para
+construir las predicciones.
 
 ## Resultados
 
