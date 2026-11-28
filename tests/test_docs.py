@@ -44,6 +44,7 @@ def test_model_card_has_required_sections():
     for heading in (
         "## Detalles del modelo",
         "### Sistemas",
+        "### Rasgos y salida del pipeline",
         "## Uso previsto",
         "## Factores",
         "## Métricas y umbrales",
@@ -70,6 +71,10 @@ def test_model_card_has_required_sections():
         "19 hilos",
         "15,6 %",
         "pendiente",
+        "origen_M2",
+        "abstiene_M2",
+        "15 reglas",
+        "[[...]]",
     ):
         assert value in text
 

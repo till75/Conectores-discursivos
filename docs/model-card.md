@@ -37,6 +37,34 @@ comentarios de YouTube en español de Chile.
 B0 y B1 son baselines; M1 y M2 son los modelos entrenados. Las variantes con
 abstención comparten el modelo y cambian el punto de operación.
 
+### Rasgos y salida del pipeline
+
+**Entrada.** Un comentario normalizado y cada coincidencia del listado: forma,
+posición inicial y etiqueta de referencia cuando existe. Para cada coincidencia
+se construye una ventana de ±6 palabras con la unidad marcada como `[[...]]`, y
+se anotan las seis banderas (`coma_antes`, `coma_despues`,
+`inicio_comentario`, `inicio_oracion`, `fin_enunciado`, `is_reply`), las
+categorías gramaticales de spaCy y el contexto de la unidad.
+
+**Rasgos.** TF-IDF de palabras (1–2 gramos), de caracteres (`char_wb`, 2–5) y de
+la unidad; las seis banderas; el embedding congelado de 384 dimensiones; las 15
+reglas de contexto congeladas; `pos_u`, `pos_ant`, `pos_sig`, `tok_ant` y
+`tok_sig`; y la bandera `revisar_categoria`.
+
+**Salida pública.** Una fila por ocurrencia y semilla con `semilla`,
+`comment_id`, `thread_id`, `unidad`, `inicio`, `oro`, `B0`, `B1`, `M1`, `M2`,
+`p_M1`, `p_M2`, `origen_M2`, `revisar_categoria` y `abstiene_M2`.
+
+**Códigos de procedencia.** `origen_M2` vale `listado` cuando el listado fija la
+categoría (una sola admitida) o cuando el modelo no tiene una clase admitida;
+vale `modelo` cuando elige entre varias admitidas. `revisar_categoria` es
+verdadero si la categoría elegida tiene menos de 5 ejemplos de entrenamiento.
+`abstiene_M2` es verdadero si `abs(p_M2 - 0,5) < margen`.
+
+**Contrato completo.** [`docs/specs/0005-m2-replay.md`](specs/0005-m2-replay.md)
+define las columnas, las reglas y los casos límite. La salida pública no incluye
+texto, ventanas ni POS.
+
 ## Uso previsto
 
 **Usos primarios.** Asistir al anotador del equipo: proponer candidatas,
@@ -116,6 +144,14 @@ tope se aplica al pliegue de validación, no al resultado de test. En uso, la
 abstención y `revisar_categoria` alimentan la revisión humana; no se debe bajar
 el margen para maximizar cobertura sin revisar.
 
+**Cómo se calculan las métricas con abstención.** Las filas abstenidas se
+excluyen del cálculo de F1, precisión y cobertura de las variantes “con
+abstención”; no se cuentan como errores. El denominador de cobertura mantiene
+las etiquetas no detectadas (5/3/4/8/4) y no se reduce por abstención. Por eso
+M2 con abstención sube la precisión de 0.599 a 0.715 y baja la cobertura de
+0.407 a 0.401: se evalúa sobre menos filas, pero la cobertura sigue castigando
+lo que el listado no ve.
+
 La incertidumbre se reporta con cinco semillas, media y desviación estándar, e
 intervalos bootstrap por hilo. No se declara significación estadística.
 
@@ -150,7 +186,7 @@ Los conteos de etiquetas no detectadas por semilla son 5/3/4/8/4; se incluyen
 como falsos negativos en la cobertura. Las CSL se excluyen. Los IDs y hashes de
 test están congelados y el pipeline no vuelve a ejecutar `GroupShuffleSplit`.
 
-La motivación es el único conjunto con etiquetas del proyecto. No hay datos de
+El piloto es el único conjunto con etiquetas del proyecto. No hay datos de
 evaluación del corpus de aplicación, que cambia de tema y no tiene referencia.
 Ver [`docs/data-card.md`](data-card.md).
 
@@ -239,21 +275,16 @@ privacidad.
 
 ## Limitaciones
 
-- El piloto cubre un solo video y un solo tema; la partición por hilo no mide
-  generalización a otro video.
-- El corpus de aplicación cambia de tema y no tiene etiquetas.
+Los riesgos y daños están en la sección anterior; aquí quedan las limitaciones
+técnicas y de evidencia.
+
 - Las 209 negativas implícitas son un supuesto; la auditoría de 20 candidatas
   sigue diferida.
-- 16 etiquetas no son detectables por el listado y 17 candidatas nunca entran en
-  un test.
-- La muestra es pequeña; 7 de 12 categorías tienen tres o menos ejemplos; los
-  intervalos son anchos y no se declara significación.
+- 17 candidatas nunca entran en un test.
 - El embedding es externo y congelado; no se entrenó con las etiquetas del
   piloto, pero puede haber visto texto parecido.
 - La regla de `inicio_oracion`/`_pregunta` que trata el salto de línea como
   frontera de oración está congelada; cambiarla exige un ADR.
-- El tope medio de abstención se cumple, pero dos semillas superan el 20 % en
-  test.
 - No hay análisis por categoría, video, longitud, respuesta ni interseccional.
 - B0 y B1 son baselines simples; no representan el estado del arte.
 - No hay modelo serializado: el pipeline se reajusta; la reproducibilidad
@@ -320,6 +351,10 @@ actualizaciones de la ficha. El contacto formal del equipo está pendiente.
 
 **Autores de la ficha.** Equipo 11; edición de Till Seyfarth.
 **Versión de la ficha.** 2026-11-27, v1.
+
+Esta ficha es v0.1.0 (2026-11-27). La licencia, la cita formal y el contacto
+deben completarse antes de una publicación o entrega final; no se inventan en
+este documento.
 
 ## Reproducción
 
