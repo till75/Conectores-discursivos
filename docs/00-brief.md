@@ -2,7 +2,7 @@
 
 **Status:** approved 20 November 2026
 **Slice at approval:** S2 — candidate replay
-**Current slice:** S6 — publication pack (see `docs/plan.md` and
+**Current slice:** S6 — publication pack (complete; see `docs/plan.md` and
 `docs/state.md`)
 **Sources:** `doc/Equipo11_Propuesta_v4_hito2.docx`, `docs/00-onboarding.md`,
 `docs/results/0001-metric-replay-diagnostics.md`, `doc/resultados_hito2.zip`

@@ -3,6 +3,7 @@
 **Slice:** S6 — publication pack
 **Date:** 2026-11-27
 **Status:** pass
+**Approved:** 2026-11-27 by Till
 **Spec:** [0006-publication-pack.md](../specs/0006-publication-pack.md)
 **Commits:** `a16a6c5..ea803c4`, plus the docs audit and final approval commits
 **Report owner:** Till
@@ -213,7 +214,7 @@ predictions, 30 system rows, 6 summary rows, 15 intervals and 5 diagnostics,
 with zero deviations and zero privacy mentions. The prediction, systems,
 summary and interval comparisons match the published tables; the data card,
 model card and README are present and tested; S1–S5 remain green. The pack is
-ready for approval.
+approved 2026-11-27 by Till.
 
 ## Follow-up
 

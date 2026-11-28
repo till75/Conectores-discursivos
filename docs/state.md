@@ -1,7 +1,10 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) is implemented, the slow end-to-end test is green and the diagnostic report is written. S6 is ready for approval.
+S1–S6 are complete, approved and pushed. `origin/main` is the S6 approval
+commit (see `git log -1`). The repository reproduces the published metric
+table, the candidates, the baselines, M1, M2 and the seven-file publication
+pack. No slice is active.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -31,14 +34,18 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S6 evidence: 139 default tests and 14 slow tests pass; `ruff check .` clean.
 - S6 diagnostic report written: `docs/results/0006-publication-pack-diagnostics.md`, including the pack shapes, split/hashes, metrics, abstention, traceability, intervals, privacy scan and the bootstrap-order fix.
 - S6 docs audit: README now describes S6 as implemented and links the S6 report; plan, brief, onboarding and learn index reflect S1–S6; the model card funding row is project context, not a payment claim.
+- S6 approved 2026-11-27 by Till: `docs/results/0006-publication-pack-diagnostics.md` carries the approval; the final S6 docs are pushed with this handoff.
 
 ## Next
-1. Commit the final S6 docs.
-2. Stop for approval; do not push before it.
+1. No active slice. The plan S0–S6 is complete.
+2. The natural next slice is the application corpus run; it needs its own design/spec and a privacy review.
+3. The newline-rule decision, the 20-candidate audit and the documentation privacy exceptions remain open.
 
 ## Open questions
-- The `inicio_oracion` newline rule, the 20-candidate audit and the documentation privacy exceptions remain open.
-- The application corpus run remains deferred.
+- The `inicio_oracion`/`_pregunta` newline rule needs a group decision and an ADR before any change.
+- The 20-candidate implicit-negative audit remains deferred.
+- The documentation-only privacy exceptions for S2, S3 and `docs/learn/` need team confirmation.
+- The application corpus run remains deferred; its 19,741/20,097 candidate counts and 2,000-comment sample are unresolved.
 
 ## Gotchas
 - Run Python as `.venv\Scripts\python.exe`; spaCy model is `es_core_news_sm`.
@@ -52,4 +59,5 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S2/S3/`docs/learn/` have documentation-only privacy exceptions; do not extend them without request.
 - S5 `/learn` is complete; the teaching note is documentation, not a spec.
 - S5 does not need an ADR for the rule set: recording the frozen rules is not a change. Editing them would need one.
+- S6 does not need an ADR: it composes S1–S5 and does not change the split, seeds, threshold, metrics, rules or published artifacts.
 - S4 used the frozen embeddings cache; replay tests must not refit or download it.

@@ -7,10 +7,10 @@ Anotación automática de conectores y operadores discursivos (Fuentes Rodrígue
 dentro de `doc/`. El repositorio reproduce la tabla publicada de métricas,
 reconstruye las 273 candidatas y reimplementa los baselines B0 y B1, M1 y M2,
 incluidos los márgenes, la trazabilidad y la comparación con las tablas
-publicadas. El paquete de publicación (S6) está implementado: un comando único
-reconstruye las predicciones y las tablas y escribe el paquete; las fichas de
-datos y de modelo están en `docs/`. Se empieza por entender (`/onboard`) y
-reproducir, no por escribir un modelo nuevo.
+publicadas. El paquete de publicación (S6) está implementado y aprobado: un
+comando único reconstruye las predicciones y las tablas y escribe el paquete;
+las fichas de datos y de modelo están en `docs/`. Se empieza por entender
+(`/onboard`) y reproducir, no por escribir un modelo nuevo.
 
 ## El problema
 

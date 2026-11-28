@@ -1,10 +1,10 @@
 # Plan — vertical slices
 
-**Status:** active
+**Status:** complete
 **Source:** `docs/00-brief.md` (approved 20 November 2026)
-**Current state:** S0–S6 are implemented. S1–S6 reproduce the published metric
-table, the candidates, the baselines, M1, M2 and the publication pack; the S6
-pack is ready for approval. S1 verifies the five frozen hashes.
+**Current state:** S0–S6 are implemented, approved and pushed. S1–S6 reproduce
+the published metric table, the candidates, the baselines, M1, M2 and the
+publication pack. S1 verifies the five frozen hashes.
 
 ## Ordering principle
 
@@ -103,7 +103,7 @@ reports zero `@name`.
 | Benchmark | 21 Nov | The published comparison table | S1 reproduces it with zero deviations |
 | Frozen rules | 25 Nov | The M2 rule set recorded and frozen | S5 records it; no edit without an ADR |
 | Frozen test | 27–28 Nov | The five test IDs and hashes unchanged | S1 verifies all five hashes |
-| Repository, data card, model card, defence | 3–4 Dec | S2–S6 complete and documented | S6 implemented; pending approval |
+| Repository, data card, model card, defence | 3–4 Dec | S2–S6 complete and documented | S6 complete and approved |
 
 The benchmark gate is already covered by S1: the published table is
 reproduced from the raw predictions. S2–S5 extend the evidence from the
