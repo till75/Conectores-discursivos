@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, and no S6 code or tests have been written.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved and the combined public frame is green. The rest of the pipeline, the output writer, the CLI and the cards remain.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -21,11 +21,12 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 full pass: 13 slow tests and 124 default tests pass; `ruff check .` clean.
 - S5 diagnostic report written: `docs/results/0005-m2-replay-diagnostics.md`, including the margin investigation, the fix, the per-seed table, the intervals and the privacy check.
 - S5 approved and pushed: `0060709`; `origin/main` is at `0060709`.
-- S6 spec approved 2026-11-27: `docs/specs/0006-publication-pack.md`; seven-file pack, flat summary, Spanish static cards, extracted publicable directory and the `@USER` privacy rule are approved. No S6 code or tests yet.
+- S6 spec approved 2026-11-27: `docs/specs/0006-publication-pack.md`; seven-file pack, flat summary, Spanish static cards, extracted publicable directory and the `@USER` privacy rule are approved.
+- S6 combined public frame: `src/conectores/pipeline.py` and `tests/test_pipeline.py`; the helper merges B0/B1, M1 and M2 into the 15-column public frame, checks key/label/thread agreement and drops the M1 abstention internals.
 
 ## Next
-1. Start `/tdd` with the combined public frame.
-2. Then the metrics/replay composition, output writer, CLI, privacy check, data card, model card and README.
+1. Continue `/tdd` with the `run_pipeline` metrics/replay composition.
+2. Then the output writer, CLI, privacy check, data card, model card and README.
 3. Finish with the S6 diagnostic report and approval.
 
 ## Open questions
