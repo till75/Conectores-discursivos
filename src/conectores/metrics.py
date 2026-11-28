@@ -343,17 +343,19 @@ def replay(
     hashes: Mapping[str, str],
     test_files: Mapping[int, str],
     n: int = 1000,
+    margins: Mapping[tuple[int, str], float] | None = None,
 ) -> ReplayResult:
     """Return the replayed tables and the deviations from the published ones."""
     test_ids = {seed: text.split() for seed, text in test_files.items()}
     undetected = undetected_labels(reference, listing, csl)
     totals, per_thread = count_undetected(undetected, reference, test_ids)
-    margins = {
-        (int(row.semilla), row.sistema): float(row.margen)
-        for row in published["systems"].itertuples()
-        if row.sistema in ("M1 con abstención", "M2 con abstención")
-        and not pd.isna(row.margen)
-    }
+    if margins is None:
+        margins = {
+            (int(row.semilla), row.sistema): float(row.margen)
+            for row in published["systems"].itertuples()
+            if row.sistema in ("M1 con abstención", "M2 con abstención")
+            and not pd.isna(row.margen)
+        }
     systems = replay_systems(predictions, margins, totals)
     summary = summary_systems(systems)
     intervals = replay_intervals(predictions, per_thread, n=n)

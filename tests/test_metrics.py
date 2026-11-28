@@ -749,6 +749,26 @@ def test_replay_tables_synthetic():
     ]
 
 
+def test_replay_uses_explicit_margins():
+    """The caller can pass the rebuilt margins instead of the published ones."""
+    fixture = _replay_fixture()
+    margins = {
+        (0, "M1 con abstención"): 0.0,
+        (0, "M2 con abstención"): 0.0,
+        (1, "M1 con abstención"): 0.0,
+        (1, "M2 con abstención"): 0.0,
+    }
+
+    result = replay(**fixture, n=10, margins=margins)
+
+    abstention_rows = result.systems[
+        result.systems["sistema"].str.endswith("con abstención")
+    ]
+    assert (abstention_rows["margen"] == 0).all()
+    m1_rows = result.systems[result.systems["sistema"] == "M1 con abstención"]
+    assert (m1_rows["abstencion"] == 0).all()
+
+
 def test_replay_reports_deviations_and_hashes():
     """A perturbed cell and a wrong hash are both named."""
     fixture = _replay_fixture()

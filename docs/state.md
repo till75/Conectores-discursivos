@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved and the combined public frame is green. The rest of the pipeline, the output writer, the CLI and the cards remain.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, the combined public frame is green and `run_pipeline` now composes the systems, summary, intervals, diagnostics and traceability. The output writer, CLI and cards remain.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -23,10 +23,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S5 approved and pushed: `0060709`; `origin/main` is at `0060709`.
 - S6 spec approved 2026-11-27: `docs/specs/0006-publication-pack.md`; seven-file pack, flat summary, Spanish static cards, extracted publicable directory and the `@USER` privacy rule are approved.
 - S6 combined public frame: `src/conectores/pipeline.py` and `tests/test_pipeline.py`; the helper merges B0/B1, M1 and M2 into the 15-column public frame, checks key/label/thread agreement and drops the M1 abstention internals.
+- S6 pipeline composition: `run_pipeline` builds candidates, B0/B1, M1 and M2, combines the frame, passes the rebuilt margins to `metrics.replay`, and returns the tables, traceability and privacy count. `replay` now accepts explicit `margins`.
 
 ## Next
-1. Continue `/tdd` with the `run_pipeline` metrics/replay composition.
-2. Then the output writer, CLI, privacy check, data card, model card and README.
+1. Continue `/tdd` with the output writer and CLI.
+2. Then the privacy check integration, data card, model card and README.
 3. Finish with the S6 diagnostic report and approval.
 
 ## Open questions
