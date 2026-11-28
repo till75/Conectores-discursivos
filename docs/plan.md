@@ -1,10 +1,10 @@
 # Plan — vertical slices
 
-**Status:** draft for approval
+**Status:** active
 **Source:** `docs/00-brief.md` (approved 20 November 2026)
-**Current state:** S0 onboarding and S1 metric replay are complete. S1
-reproduces the published metric table with zero deviations and verifies the
-five frozen hashes.
+**Current state:** S0–S6 are implemented. S1–S6 reproduce the published metric
+table, the candidates, the baselines, M1, M2 and the publication pack; the S6
+pack is ready for approval. S1 verifies the five frozen hashes.
 
 ## Ordering principle
 
@@ -27,7 +27,7 @@ note and an explicit choice.
 | S3 | Baseline replay | Rebuild B0 and B1 from the reference and the listing | B0 and B1 predictions and metrics match the published per-seed rows and the summary at three decimals | `src/conectores/baselines.py`, `tests/test_baselines.py`, `tests/test_integration.py` | Unit: B0 first-category rule, B1 most-frequent label, unseen form fallback. Slow: published B0/B1 rows | S | no | no |
 | S4 | M1 replay | Rebuild M1: two-step logistic regression on context features | M1 predictions and metrics match the published per-seed rows and the summary at three decimals; the margin is learned inside training by grouped CV | `src/conectores/features.py`, `src/conectores/models.py`, `tests/test_features.py`, `tests/test_models.py`, `tests/test_integration.py` | Unit: window features, punctuation, position, embedding shape, two-step fit. Slow: published M1 rows | L | yes | no |
 | S5 | M2 replay | Rebuild M2: M1 plus the list restriction, the frozen rules, POS, rare-category flag, and provenance | M2 predictions and metrics match the published per-seed rows, the summary, and the traceability counts (91/58/34/33/20/43) at three decimals | `src/conectores/rules.py`, `src/conectores/models.py`, `tests/test_rules.py`, `tests/test_integration.py` | Unit: each frozen rule, list restriction, POS rule, rare-category flag, provenance. Slow: published M2 rows and traceability | L | yes | yes, if the rule set changes |
-| S6 | Publication pack | End-to-end run, data card, model card, reproduction commands | One command rebuilds the published table from the raw inputs; the data card and model card describe the data and the systems; the privacy check reports zero `@name` | `src/conectores/pipeline.py`, `docs/data-card.md`, `docs/model-card.md`, `README.md`, `tests/test_integration.py` | Smoke: end-to-end reproduction. Privacy: zero `@name` | M | no | no |
+| S6 | Publication pack | End-to-end run, data card, model card, reproduction commands | One command rebuilds the published table from the raw inputs; the data card and model card describe the data and the systems; the privacy check reports zero `@name` | `src/conectores/pipeline.py`, `src/conectores/metrics.py`, `docs/data-card.md`, `docs/model-card.md`, `README.md`, `tests/test_pipeline.py`, `tests/test_docs.py`, `tests/test_integration.py` | Unit: frame, composition, writer, CLI, prediction/privacy, docs. Slow: seven-file end-to-end pack. Privacy: zero `@name` | M | no | no |
 
 ## Slice detail
 
@@ -103,7 +103,7 @@ reports zero `@name`.
 | Benchmark | 21 Nov | The published comparison table | S1 reproduces it with zero deviations |
 | Frozen rules | 25 Nov | The M2 rule set recorded and frozen | S5 records it; no edit without an ADR |
 | Frozen test | 27–28 Nov | The five test IDs and hashes unchanged | S1 verifies all five hashes |
-| Repository, data card, model card, defence | 3–4 Dec | S2–S6 complete and documented | S6 |
+| Repository, data card, model card, defence | 3–4 Dec | S2–S6 complete and documented | S6 implemented; pending approval |
 
 The benchmark gate is already covered by S1: the published table is
 reproduced from the raw predictions. S2–S5 extend the evidence from the

@@ -1,7 +1,9 @@
 # Project brief — Conectores discursivos
 
-**Status:** draft for approval
-**Slice:** S2 — candidate replay (next)
+**Status:** approved 20 November 2026
+**Slice at approval:** S2 — candidate replay
+**Current slice:** S6 — publication pack (see `docs/plan.md` and
+`docs/state.md`)
 **Sources:** `doc/Equipo11_Propuesta_v4_hito2.docx`, `docs/00-onboarding.md`,
 `docs/results/0001-metric-replay-diagnostics.md`, `doc/resultados_hito2.zip`
 
@@ -146,7 +148,7 @@ assumption to confirm, not a blocker.
 | Audience | Team annotator first; Fondecyt researchers second |
 | Success | Reproduce the published numbers from the same preconditions |
 | Reference | Closed at 150 comments; no expansion |
-| Next slice | Candidate replay (S2) |
+| Next slice at approval | Candidate replay (S2) |
 | Application candidate count | Decide later; 19,741 vs 20,097; 2,000 sample is exploratory |
 
 ## Assumptions to confirm
@@ -182,4 +184,5 @@ assumption to confirm, not a blocker.
 
 ## Approval
 
-Approve the brief, or correct the assumptions.
+**Approved:** 20 November 2026. The open questions remain as recorded; the
+current slice and status live in `docs/plan.md` and `docs/state.md`.

@@ -15,9 +15,8 @@ Rules:
   refresh policy); data and failure modes (false negatives versus false
   positives, abstention, thread leakage, unseen forms); non-functional needs
   (logging, config, reproducibility, packaging, publication of artifacts).
-- Treat the proposal in `doc/Equipo11_Propuesta_v3_equipo.docx` as the source of
-  requirements R1–R7 and the four restrictions a)–d). Ask before contradicting
-  it.
+- Treat the proposal in `doc/Equipo11_Propuesta_v4_hito2.docx` as the source of
+  requirements R1–R7 and the restrictions a)–e). Ask before contradicting it.
 - Stop asking when the remaining unknowns are cheap to reverse later.
 - Keep **Decisions**, **Assumptions**, and **Open questions** strictly
   separate. Anything you guessed is an Assumption, never a Decision.

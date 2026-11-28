@@ -14,10 +14,13 @@ the authority; these pages are the teaching material.
 | [04 — M2 rules and provenance](04-m2-rules-provenance.md) | The strict listing restriction, the 15 frozen rules, POS features, the rare-category flag, provenance and the margin. | S5 |
 | [S3 — B0 versus B1](../results/0003-baseline-replay-diagnostics.md#the-two-rules-at-a-glance) | The baseline flowchart and six worked examples. | S3 |
 | [S2 — Candidate categories](../results/0002-candidate-replay-diagnostics.md#worked-examples) | One real example of each candidate count. | S2 |
+| [S6 — Publication pack](../results/0006-publication-pack-diagnostics.md) | The end-to-end pack, data card, model card and reproduction commands. | S6 |
 
 The S4 approach choice is recorded in
 [design note 0004](../design/0004-m1-replay.md). The S5 approach choice is
-recorded in [design note 0005](../design/0005-m2-replay.md).
+recorded in [design note 0005](../design/0005-m2-replay.md). S6 has no
+`/learn` note; its deliverables are the data card, the model card and the
+README reproduction section.
 
 ## How to use these notes
 

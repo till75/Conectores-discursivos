@@ -4,7 +4,7 @@
 **Date:** 2026-11-27
 **Status:** pass
 **Spec:** [0006-publication-pack.md](../specs/0006-publication-pack.md)
-**Commits:** `a16a6c5..8686ba7`, plus this report commit
+**Commits:** `a16a6c5..ea803c4`, plus the docs audit and final approval commits
 **Report owner:** Till
 
 ## Intended goal

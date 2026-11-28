@@ -30,6 +30,7 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S6 slow end-to-end: `test_pipeline_end_to_end` runs the real CLI and writes the full pack with zero deviations and zero privacy mentions. The rebuilt frame is ordered by the frozen published keys before the bootstrap; that reproduces the 15 published intervals without reading published values.
 - S6 evidence: 139 default tests and 14 slow tests pass; `ruff check .` clean.
 - S6 diagnostic report written: `docs/results/0006-publication-pack-diagnostics.md`, including the pack shapes, split/hashes, metrics, abstention, traceability, intervals, privacy scan and the bootstrap-order fix.
+- S6 docs audit: README now describes S6 as implemented and links the S6 report; plan, brief, onboarding and learn index reflect S1–S6; the model card funding row is project context, not a payment claim.
 
 ## Next
 1. Commit the final S6 docs.

@@ -88,8 +88,6 @@ What the numbers do **not** mean:
   reference rows and only the thread split changes. Every comment reaches a test
   in some seed, so this is a repeated grouped holdout, not one frozen test.
 - They do not settle the precision/recall trade-off. That is a design choice.
-- They do not prove the notebook reproduces locally. The local versions differ
-  from Colab (pandas 3.1.1, scikit-learn 1.9.1, spaCy 3.8.18, torch 2.15).
 - The **209 implicit negatives** are a caveat. The annotation marks connectors,
   not every non-connector. Of the 209 negatives, 84 come from rows marked "Sin
   etiquetas" and 125 sit inside comments that were annotated. If annotators only
@@ -163,7 +161,7 @@ flowchart TB
 | **Baseline B1** | Label each form with its most frequent label in training. |
 | **M1** | Two-step logistic regression on context features. |
 | **M2** | M1 plus the list restriction, hand-written context rules, spaCy POS, rare-category flag, and provenance. |
-| **M3** | The planned rules layer that decides before the model. Due 25 November; not in the notebook. |
+| **M3** | A rule-first alternative that decides before the model; not part of the current plan. A new slice would need a design and spec. |
 | **Margin** | The distance from 0.5 below which the system abstains. Learned in training. |
 | **Thread** | A top-level comment plus its replies. The split unit. |
 | **Seed** | One of 0–4. Each seed gives a different thread split. |
@@ -186,15 +184,17 @@ flowchart TB
 | `doc/equipo11_B0_B1_M1_M2.ipynb` | The reference implementation, including its mistakes. |
 | `gate.toml` | Frozen protocol constants: seeds, split fraction, abstention cap, window, model. |
 | `docs/state.md` | Handoff: where we are, what is blocked, gotchas. |
+| `docs/data-card.md` | Data card: pilot, application corpus, split, reference and privacy. |
+| `docs/model-card.md` | Model card: systems, features, metrics, risks and limitations. |
 | `docs/results/data-overview/` | The corpus overview and input audit. |
 | `docs/research/local-llm-annotation.md` | Future work: a local open LLM as a measured teacher. |
-| `docs/adr/` | Decisions that change what a result means. |
-| `docs/design/` | Design notes from `/learn`. |
-| `docs/learn/` | Concept notes from `/learn`: window, TF-IDF, embeddings. |
-| `docs/specs/` | Contracts from `/spec`. |
-| `docs/results/` | Slice diagnostic reports. |
-| `src/conectores/` | Package code. Empty beyond the version string. |
-| `tests/` | Test suite. One package test today. |
+| `docs/adr/` (not created) | No ADRs yet; protocol-changing decisions would go here. |
+| `docs/design/` | Design notes 0002, 0004 and 0005 from `/learn`. |
+| `docs/learn/` | Concept notes from `/learn`: window, TF-IDF, embeddings and M2 rules. |
+| `docs/specs/` | Contracts for S1–S6 from `/spec`. |
+| `docs/results/` | Slice diagnostic reports S1–S6 and the data overview. |
+| `src/conectores/` | Package code: candidates, baselines, features, metrics, models, rules and pipeline. |
+| `tests/` | pytest suite: unit, slow integration and documentation tests. |
 | `.opencode/commands/` | The workflow commands: `/onboard`, `/grill`, `/plan`, `/learn`, `/spec`, `/tdd`. |
 
 ## 7. Data facts and discrepancies

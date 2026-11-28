@@ -7,10 +7,10 @@ Anotación automática de conectores y operadores discursivos (Fuentes Rodrígue
 dentro de `doc/`. El repositorio reproduce la tabla publicada de métricas,
 reconstruye las 273 candidatas y reimplementa los baselines B0 y B1, M1 y M2,
 incluidos los márgenes, la trazabilidad y la comparación con las tablas
-publicadas. La siguiente etapa es el paquete de publicación (S6): un comando
-único, la ficha de datos, la ficha de modelo y las instrucciones de
-reproducción. Se empieza por entender (`/onboard`) y reproducir, no por escribir
-un modelo nuevo.
+publicadas. El paquete de publicación (S6) está implementado: un comando único
+reconstruye las predicciones y las tablas y escribe el paquete; las fichas de
+datos y de modelo están en `docs/`. Se empieza por entender (`/onboard`) y
+reproducir, no por escribir un modelo nuevo.
 
 ## El problema
 
@@ -39,7 +39,7 @@ El sistema propuesto (M2) combina:
 - abstención por umbral elegido con validación cruzada agrupada por hilo, y
   «revisar categoría» cuando la categoría tiene menos de 5 ejemplos;
 - trazabilidad: cada etiqueta registra el origen de la categoría (listado o
-  modelo) y las reglas activadas.
+  modelo) y la bandera `revisar_categoria` cuando corresponde.
 
 ## Datos y privacidad
 
@@ -47,8 +47,8 @@ El sistema propuesto (M2) combina:
   anotación de referencia.
 - Corpus de aplicación: 10.505 comentarios, sin etiquetas.
 - Por las políticas de la API de YouTube y el requisito R5, el repositorio
-  publica **sólo IDs, etiquetas y métricas**. Nunca se versionan texto de
-  comentarios, ventanas de contexto ni `author_hash`.
+  publica **sólo IDs, formas, etiquetas, conteos y métricas**. Nunca se
+  versionan texto de comentarios, ventanas de contexto ni `author_hash`.
 - `doc/` contiene el material de origen (propuesta, guion, notebooks, listado y
   corpus). Los corpus dentro de `doc/` están en `.gitignore`; trátalos como
   material de lectura local, no como parte del repositorio.
@@ -59,7 +59,9 @@ El sistema propuesto (M2) combina:
 doc/                     material de origen (propuesta, guion, notebooks, corpus)
 src/conectores/          paquete Python
 tests/                   pruebas (pytest)
-docs/                    brief, plan, ADRs, notas de diseño, specs y resultados
+docs/                    brief, plan, notas de diseño, specs, fichas y resultados
+docs/data-card.md        ficha de datos
+docs/model-card.md       ficha de modelo
 docs/learn/              notas de enseñanza de conceptos (/learn)
 docs/results/            informe de diagnóstico de cada slice y artefactos
 .opencode/commands/      comandos del flujo de trabajo (/learn, /spec, /tdd, ...)
@@ -129,7 +131,9 @@ contiene `predicciones_test.csv`, `resultados_semillas.csv`,
 Las fichas de datos y de modelo están en
 [`docs/data-card.md`](docs/data-card.md) y
 [`docs/model-card.md`](docs/model-card.md). La evidencia del piloto está en
-[`docs/results/`](docs/results/) y los contratos en [`docs/specs/`](docs/specs/).
+[`docs/results/`](docs/results/); el informe del paquete S6 es
+[`docs/results/0006-publication-pack-diagnostics.md`](docs/results/0006-publication-pack-diagnostics.md).
+Los contratos están en [`docs/specs/`](docs/specs/).
 
 ## Flujo de trabajo
 
@@ -146,12 +150,17 @@ las convenciones de diagramas.
 
 ## Material de origen
 
-- `doc/Equipo11_Propuesta_v3_equipo.docx` — propuesta del proyecto (problema,
-  requisitos, dataset, ruta del sistema, protocolo, riesgos y plan).
+- `doc/Equipo11_Propuesta_v4_hito2.docx` — propuesta vigente (problema,
+  requisitos, dataset, ruta del sistema, protocolo, riesgos y plan); v3 quedó
+  obsoleta.
 - `doc/Guion · Presentación intermedia · Equipo 11.pdf` — guion de la
   presentación intermedia del 20 nov (el nombre real usa un punto medio `·` y
   una tilde combinada).
 - `doc/equipo11_B0_B1_M1_M2.ipynb` — notebook con B0, B1, M1, M2 y el detector
   exploratorio de construcciones semilibres.
+- `doc/referencia_piloto.csv` — 150 comentarios de referencia.
+- `doc/csl_excluidas.csv` — 16 construcciones semilibres excluidas.
+- `doc/resultados_hito2.zip` — tablas publicadas, predicciones y tests
+  congelados.
 - `doc/normalizar_comentarios.ipynb` — normalización automática del corpus.
 - `doc/listado_fuentes2009.csv` — listado de unidades y categorías.
