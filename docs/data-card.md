@@ -27,22 +27,59 @@ pipeline del piloto esté validado.
 
 El listado de Fuentes Rodríguez (2009) tiene 705 filas y 614 formas distintas
 después de normalizar los números de sentido. 548 formas admiten una sola
-categoría y 66 admiten varias; 155 están marcadas como polifuncionales.
+categoría y 66 admiten varias; 155 filas están marcadas `polifuncional`.
+
+`polifuncional` es una marca de la fuente (155 filas); las 66 formas con varias
+categorías son las que tienen más de una etiqueta distinta en `categoria`
+después de normalizar. Son conteos distintos y no se derivan uno del otro.
 
 Las 16 construcciones semilibres (CSL) anotadas se excluyen del puntaje: su
-función pertenece a la construcción completa, no a la palabra suelta.
+función pertenece a la construcción completa, no a la palabra suelta. Una CSL
+tiene una parte fija y un hueco variable; el listado contiene la palabra suelta,
+pero la función pertenece a la construcción.
+
+## Esquema de las tablas
+
+| Archivo | Columnas principales | Uso |
+|---|---|---|
+| `referencia_piloto.csv` | `fila`, `comment_id`, `thread_id`, `is_reply`, `video_id`, `text_normalized`, `anotacion` | Referencia del piloto; `anotacion` usa el marcado `[unidad::ETIQUETA]` |
+| `comentarios_youtube_normalizados.csv` | metadatos del video, `comment_id`, `parent_comment_id`, `thread_id`, `is_reply`, `total_thread_replies`, `comment_position`, `published_at`, `like_count`, `author_hash`, `comment_text`, `text_normalized`, `revisar` | Corpus de aplicación; `comment_text` ya está anonimizado |
+| `comentarios_youtube.csv` | las columnas anteriores más `comment_text_raw` | Corpus crudo; `comment_text_raw` es el texto original y nunca se publica |
+| `csl_excluidas.csv` | `comment_id`, `unidad` | Pares comentario/unidad dentro de una CSL, excluidos del puntaje |
+| `listado_fuentes2009.csv` | `unidad`, `macrofuncion`, `categoria`, `subcategoria`, `polifuncional` | Listado de Fuentes Rodríguez (2009) |
+
+`anotacion_final` no está en `referencia_piloto.csv`: es una columna del libro de
+anotación y solo está llena en 48 de las 65 filas etiquetadas. `author_hash` es
+un hash seudónimo del autor; no se publica y no debe entrar en los artefactos.
+`@USER` es el marcador de mención anonimizada: el texto crudo no tiene ninguna y
+el normalizado tiene 1.830; 1.814 filas cambian entre ambos.
+
+El `video_id` de `referencia_piloto.csv` contiene un título de video, no un ID.
+Se documenta así para no confundirlo con el `video_id` de la aplicación.
+
+## Normalización
+
+La normalización es determinista y se aplica en este orden: menciones a
+`@USER`; emojis a texto; mayúsculas a minúsculas; risas a `ja`/`jaja`/`jajaja`;
+alargamientos; abreviaciones; nombres y siglas; puntuación (`...` a `…`,
+`???` a `?`); signos de apertura; mayúscula inicial de oración.
+
+Cambia 6.984 comentarios (66,5 %), inserta 3.271 tokens de emoji y marca 50
+filas en `revisar`. No agrega tildes, no corrige ortografía y no resuelve
+*porque / por qué*. Puede borrar señales de énfasis (mayúsculas, alargamientos)
+que separan un operador de un adverbio.
+
+La normalización cambia el número de candidatas del corpus de aplicación:
+19.741 sobre `comment_text` y 20.097 sobre `text_normalized` (+356). El pipeline
+del piloto usa `text_normalized`.
 
 ## Candidatas
 
-Las 284 coincidencias brutas del listado se reducen a 273 candidatas:
-
-- 8 coincidencias dentro de una CSL;
-- 3 segundas piezas de una unidad mayor;
-- 273 candidatas restantes.
-
-De las 273, 64 tienen etiqueta de referencia y 209 son negativas implícitas
-(sin etiqueta). El listado no detecta 16 etiquetas de referencia; se cuentan
-como falsos negativos en la cobertura.
+De las 284 coincidencias brutas del listado se excluyen 8 dentro de una
+construcción semilibre (CSL) y 3 segundas piezas de una unidad mayor; quedan
+273 candidatas (284 − 8 − 3 = 273). De las 273, 64 tienen etiqueta de referencia
+y 209 son negativas implícitas (sin etiqueta). El listado no detecta 16
+etiquetas de referencia; se cuentan como falsos negativos en la cobertura.
 
 ## Partición
 
@@ -61,6 +98,29 @@ entre anotadores es variable: Jorge–Vannia coincide en 59 % de los comentarios
 compartidos, Jorge–Javier en 51 % y Javier–Vannia en 50 %. La referencia está
 más cerca de Vannia (58 de 65 filas etiquetadas idénticas). Por eso la etiqueta
 se trata como adjudicada o seleccionada, no como verdad medida.
+
+## Recolección y procedencia
+
+- **Origen.** Comentarios públicos de YouTube de videos de noticias chilenas.
+  El piloto tiene 6 videos y 4 canales; la aplicación tiene 20 videos y 3
+  canales (Meganoticias 6.391; 24 Horas TVN 2.421; CHV Noticias 1.693).
+- **Fechas.** Los comentarios de la aplicación van del 2023-03-21 al
+  2026-11-14; 19 videos se publicaron entre abril y noviembre de 2026 y uno en
+  marzo de 2023. La auditoría de entradas es del 2026-11-20. La fecha exacta de
+  descarga o snapshot no está registrada en el repositorio.
+- **Idioma y ruido.** El material es español de Chile; no se documenta un filtro
+  de idioma explícito, sino una selección de canales de noticias. La
+  normalización reduce ruido, pero no elimina spam, ironía, temas fuera de foco
+  ni comentarios sin contexto.
+- **Términos y retención.** El corpus está sujeto a los términos de la API de
+  YouTube y a las condiciones del proyecto. El repositorio no redistribuye
+  texto; `doc/` es local y está en `.gitignore`; solo se publican IDs, formas,
+  etiquetas, conteos y métricas. La licencia del corpus y del listado, y la
+  retención del texto, deben confirmarse con el equipo antes de publicar.
+- **Relación piloto–aplicación.** Comparten cero IDs de comentario y tratan
+  temas distintos: el piloto es sobre el alza de combustibles; la aplicación
+  cubre seguridad, migración, delito y política social. La aplicación no tiene
+  etiquetas y su ejecución está diferida.
 
 ## Privacidad
 

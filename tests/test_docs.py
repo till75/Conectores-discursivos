@@ -16,9 +16,12 @@ def test_data_card_has_required_sections():
         "## Corpus piloto",
         "## Corpus de aplicación",
         "## Listado",
+        "## Esquema de las tablas",
+        "## Normalización",
         "## Candidatas",
         "## Partición",
         "## Referencia",
+        "## Recolección y procedencia",
         "## Privacidad",
         "## Limitaciones",
     ):
@@ -33,6 +36,17 @@ def test_data_card_has_required_sections():
         "614",
         "10.505",
         "439",
+        "284 − 8 − 3 = 273",
+        "author_hash",
+        "anotacion_final",
+        "comment_text_raw",
+        "polifuncional",
+        "6.984",
+        "2023-03-21",
+        "2026-11-14",
+        "2026-11-20",
+        "API de",
+        "model-card.md",
     ):
         assert value in text
 
