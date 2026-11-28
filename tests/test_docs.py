@@ -75,6 +75,11 @@ def test_model_card_has_required_sections():
         "abstiene_M2",
         "15 reglas",
         "[[...]]",
+        "Paso 1",
+        "Paso 2",
+        "construcciones semilibres",
+        "Versión del paquete",
+        "Versión de la ficha",
     ):
         assert value in text
 

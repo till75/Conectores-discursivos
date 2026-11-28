@@ -12,8 +12,8 @@ comentarios de YouTube en español de Chile.
 |---|---|
 | Desarrollado por | Equipo 11: Diana Aguilera Fredes, Vannia Fernández-Mutis y Till Seyfarth |
 | Financiado por | Fondecyt 11260185 |
-| Fecha | 2026-11-27 |
-| Versión | 0.1.0 (paquete S6; código `8686ba7`) |
+| Versión del paquete | 0.1.0 (S6; código `8686ba7`) |
+| Fecha de la ficha | 2026-11-27 |
 | Tipo | Pipeline de clasificación de ocurrencias: regresión logística en dos pasos, reglas congeladas, POS de spaCy y embeddings congelados |
 | Idioma | Español de Chile, comentarios de YouTube |
 | Licencia | Pendiente de confirmar con el equipo; no hay archivo `LICENSE` en el repositorio |
@@ -50,6 +50,11 @@ categorías gramaticales de spaCy y el contexto de la unidad.
 la unidad; las seis banderas; el embedding congelado de 384 dimensiones; las 15
 reglas de contexto congeladas; `pos_u`, `pos_ant`, `pos_sig`, `tok_ant` y
 `tok_sig`; y la bandera `revisar_categoria`.
+
+**Dos pasos.** **Paso 1:** predice uso discursivo frente a `NO_DISCURSIVO`.
+**Paso 2:** predice la categoría entre las admitidas por el listado y se entrena
+solo con las filas positivas. La abstención y la procedencia se aplican después
+del Paso 1.
 
 **Salida pública.** Una fila por ocurrencia y semilla con `semilla`,
 `comment_id`, `thread_id`, `unidad`, `inicio`, `oro`, `B0`, `B1`, `M1`, `M2`,
@@ -161,10 +166,11 @@ El piloto tiene 1.268 comentarios de 6 videos y 798 hilos; la referencia son 150
 comentarios, de los cuales 65 tienen al menos una etiqueta y 96 spans en 12
 categorías. La referencia cubre un solo video (alza de combustibles).
 
-Las 284 coincidencias brutas se reducen a 273 candidatas: 8 dentro de una CSL,
-3 segundas piezas y 273 restantes. De ellas, 64 son positivas y 209 son
-negativas implícitas; 16 etiquetas de referencia no son detectadas por el
-listado. Las 16 CSL se excluyen del puntaje.
+Las 284 coincidencias brutas se reducen a 273 candidatas: 8 dentro de una
+construcción semilibre (CSL), 3 segundas piezas y 273 restantes. De ellas, 64
+son positivas y 209 son negativas implícitas; 16 etiquetas de referencia no son
+detectadas por el listado. Las 16 construcciones semilibres (CSL) se excluyen
+del puntaje.
 
 El listado tiene 705 filas y 614 formas; 548 formas admiten una sola categoría y
 66 admiten varias. La normalización convierte menciones a `@USER`, emojis,
@@ -183,8 +189,9 @@ producen 439 apariciones, 256 candidatas únicas y 17 candidatas que nunca entra
 en un test.
 
 Los conteos de etiquetas no detectadas por semilla son 5/3/4/8/4; se incluyen
-como falsos negativos en la cobertura. Las CSL se excluyen. Los IDs y hashes de
-test están congelados y el pipeline no vuelve a ejecutar `GroupShuffleSplit`.
+como falsos negativos en la cobertura. Las construcciones semilibres (CSL) se
+excluyen. Los IDs y hashes de test están congelados y el pipeline no vuelve a
+ejecutar `GroupShuffleSplit`.
 
 El piloto es el único conjunto con etiquetas del proyecto. No hay datos de
 evaluación del corpus de aplicación, que cambia de tema y no tiene referencia.
@@ -350,11 +357,11 @@ está pendiente.
 actualizaciones de la ficha. El contacto formal del equipo está pendiente.
 
 **Autores de la ficha.** Equipo 11; edición de Till Seyfarth.
-**Versión de la ficha.** 2026-11-27, v1.
+**Versión de la ficha.** v1 (2026-11-27).
 
-Esta ficha es v0.1.0 (2026-11-27). La licencia, la cita formal y el contacto
-deben completarse antes de una publicación o entrega final; no se inventan en
-este documento.
+El paquete es v0.1.0; esta ficha es v1 (2026-11-27). La licencia, la cita formal
+y el contacto deben completarse antes de una publicación o entrega final; no se
+inventan en este documento.
 
 ## Reproducción
 
