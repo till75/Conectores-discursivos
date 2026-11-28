@@ -36,6 +36,19 @@ PIPELINE_COLUMNS = [
     "abstiene_M2",
 ]
 
+PREDICTION_COLUMNS = [
+    "oro",
+    "B0",
+    "B1",
+    "M1",
+    "M2",
+    "origen_M2",
+    "revisar_categoria",
+    "abstiene_M2",
+]
+
+PROBABILITY_COLUMNS = ["p_M1", "p_M2"]
+
 
 @dataclass(frozen=True)
 class PipelineResult:
@@ -115,6 +128,17 @@ def run_pipeline(
         n=n_bootstrap,
         margins=margins,
     )
+    deviations = list(replay_result.deviations)
+    published_predictions = published.get("predictions")
+    if published_predictions is not None and not published_predictions.empty:
+        deviations.extend(
+            _compare_predictions(predictions, published_predictions)
+        )
+    privacy_mentions = _privacy_mentions(predictions)
+    if privacy_mentions:
+        deviations.append(
+            f"privacy: {privacy_mentions} @name mentions"
+        )
     return PipelineResult(
         predictions=predictions,
         systems=replay_result.systems,
@@ -122,8 +146,8 @@ def run_pipeline(
         intervals=replay_result.intervals,
         diagnostics=replay_result.diagnostics,
         traceability=replay_result.traceability,
-        deviations=replay_result.deviations,
-        privacy_mentions=_privacy_mentions(predictions),
+        deviations=deviations,
+        privacy_mentions=privacy_mentions,
     )
 
 
@@ -286,3 +310,42 @@ def combine_predictions(
     return merged.sort_values(MERGE_KEYS).reset_index(drop=True)[
         PIPELINE_COLUMNS
     ]
+
+
+def _compare_predictions(
+    rebuilt: pd.DataFrame, published: pd.DataFrame
+) -> list[str]:
+    """Return one named deviation per missing or changed prediction."""
+    merged = rebuilt.merge(
+        published,
+        on=MERGE_KEYS,
+        how="outer",
+        suffixes=("_replay", "_published"),
+        indicator=True,
+    )
+    deviations = []
+    for _, row in merged.iterrows():
+        key = _format_key(row)
+        if row["_merge"] == "left_only":
+            deviations.append(f"{key}: missing from published")
+            continue
+        if row["_merge"] == "right_only":
+            deviations.append(f"{key}: missing from replay")
+            continue
+        for column in PREDICTION_COLUMNS:
+            actual = row[f"{column}_replay"]
+            expected = row[f"{column}_published"]
+            if actual != expected:
+                deviations.append(
+                    f"{key}, {column}: replay {actual!r} "
+                    f"!= published {expected!r}"
+                )
+        for column in PROBABILITY_COLUMNS:
+            actual = float(row[f"{column}_replay"])
+            expected = float(row[f"{column}_published"])
+            if abs(actual - expected) > 1e-5:
+                deviations.append(
+                    f"{key}, {column}: replay {actual!r} "
+                    f"!= published {expected!r}"
+                )
+    return deviations

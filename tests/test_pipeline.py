@@ -259,6 +259,69 @@ def test_run_pipeline_composes_tables():
     assert result.privacy_mentions == 0
 
 
+def _run_synthetic(published):
+    test_text = "c1\n"
+    return run_pipeline(
+        _pipeline_reference(),
+        _pipeline_listing(),
+        _pipeline_csl(),
+        {0: test_text},
+        {"0": hashlib.sha256(test_text.encode("utf-8")).hexdigest()},
+        published,
+        _pipeline_embedder,
+        _pipeline_nlp,
+        n_bootstrap=10,
+    )
+
+
+def test_run_pipeline_reports_prediction_deviations():
+    baseline = _run_synthetic({})
+    predictions = baseline.predictions.copy()
+    actual = predictions.loc[0, "M2"]
+    predictions.loc[0, "M2"] = (
+        "CON:CIERRE" if actual != "CON:CIERRE" else "CON:ADICIÓN"
+    )
+    predictions.loc[0, "p_M2"] = predictions.loc[0, "p_M2"] + 0.5
+    predictions.loc[0, "abstiene_M2"] = not bool(
+        predictions.loc[0, "abstiene_M2"]
+    )
+
+    result = _run_synthetic({"predictions": predictions})
+
+    assert any(", M2:" in deviation for deviation in result.deviations)
+    assert any(", p_M2:" in deviation for deviation in result.deviations)
+    assert any(
+        ", abstiene_M2:" in deviation for deviation in result.deviations
+    )
+
+
+def test_run_pipeline_reports_missing_prediction_key():
+    baseline = _run_synthetic({})
+
+    result = _run_synthetic(
+        {"predictions": baseline.predictions.iloc[1:].copy()}
+    )
+
+    assert any("missing" in deviation for deviation in result.deviations)
+
+
+def test_run_pipeline_reports_privacy_deviation(monkeypatch):
+    monkeypatch.setattr(pipeline, "_privacy_mentions", lambda frame: 1)
+
+    result = _run_synthetic({})
+
+    assert result.privacy_mentions == 1
+    assert any(
+        "privacy" in deviation.lower() for deviation in result.deviations
+    )
+
+
+def test_privacy_mentions_counts_names_but_not_user():
+    frame = pd.DataFrame([{"value": "@USER @juan"}])
+
+    assert pipeline._privacy_mentions(frame) == 1
+
+
 def _pipeline_result():
     return PipelineResult(
         predictions=pd.DataFrame(columns=PIPELINE_COLUMNS),
