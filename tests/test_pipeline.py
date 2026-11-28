@@ -1,16 +1,21 @@
 """Unit tests for the publication pipeline."""
 
 import hashlib
+import json
 
 import numpy as np
 import pandas as pd
 import pytest
 
+import conectores.pipeline as pipeline
 from conectores.candidates import NO
 from conectores.pipeline import (
     PIPELINE_COLUMNS,
+    PipelineResult,
     combine_predictions,
+    main,
     run_pipeline,
+    write_pipeline_outputs,
 )
 
 
@@ -252,3 +257,136 @@ def test_run_pipeline_composes_tables():
     }
     assert result.deviations == []
     assert result.privacy_mentions == 0
+
+
+def _pipeline_result():
+    return PipelineResult(
+        predictions=pd.DataFrame(columns=PIPELINE_COLUMNS),
+        systems=pd.DataFrame({"sistema": ["M2"], "semilla": [0]}),
+        summary=pd.DataFrame(
+            {"sistema": ["M2"], "F1_etiqueta_mean": [0.5]}
+        ),
+        intervals=pd.DataFrame(
+            {"comparacion": ["M2 − B1"], "semilla": [0]}
+        ),
+        diagnostics=pd.DataFrame(
+            {"semilla": [0], "candidatas": [1], "no_detectadas": [0]}
+        ),
+        traceability={"etiquetas_discursivas": 1},
+        deviations=[],
+        privacy_mentions=0,
+    )
+
+
+def test_write_pipeline_outputs(tmp_path):
+    result = _pipeline_result()
+
+    write_pipeline_outputs(result, tmp_path)
+
+    assert (tmp_path / "predicciones_test.csv").exists()
+    assert (tmp_path / "resultados_semillas.csv").exists()
+    assert (tmp_path / "resumen_sistemas.csv").exists()
+    assert (tmp_path / "intervalos_confianza.csv").exists()
+    assert (tmp_path / "diagnosticos.csv").exists()
+    assert (tmp_path / "trazabilidad.json").exists()
+    report = (tmp_path / "pipeline_report.md").read_text(encoding="utf-8")
+    assert "Deviations: 0" in report
+    assert "Privacy mentions: 0" in report
+
+
+def _write_cli_fixture(tmp_path):
+    reference = _pipeline_reference()
+    listing = _pipeline_listing()
+    csl = _pipeline_csl()
+    reference.to_csv(tmp_path / "reference.csv", index=False)
+    listing.to_csv(tmp_path / "listing.csv", index=False)
+    csl.to_csv(tmp_path / "csl.csv", index=False)
+    test_ids = tmp_path / "test_ids"
+    test_ids.mkdir()
+    (test_ids / "test_semilla0.txt").write_text(
+        "c1\n", encoding="utf-8"
+    )
+    hashes = {"0": hashlib.sha256(b"c1\n").hexdigest()}
+    (tmp_path / "hashes.json").write_text(
+        json.dumps(hashes), encoding="utf-8"
+    )
+    published = tmp_path / "published"
+    published.mkdir()
+    pd.DataFrame(columns=["sistema", "semilla"]).to_csv(
+        published / "resultados_semillas.csv", index=False
+    )
+    pd.DataFrame(
+        columns=["sistema", "F1_etiqueta_mean"]
+    ).to_csv(published / "resumen_sistemas.csv", index=False)
+    pd.DataFrame(columns=["comparacion", "semilla"]).to_csv(
+        published / "intervalos_confianza.csv", index=False
+    )
+    pd.DataFrame(columns=PIPELINE_COLUMNS).to_csv(
+        published / "predicciones_test.csv", index=False
+    )
+    return tmp_path
+
+
+def _run_pipeline_cli(paths, output):
+    return main(
+        [
+            "--reference",
+            str(paths / "reference.csv"),
+            "--listing",
+            str(paths / "listing.csv"),
+            "--csl",
+            str(paths / "csl.csv"),
+            "--test-ids",
+            str(paths / "test_ids"),
+            "--hashes",
+            str(paths / "hashes.json"),
+            "--published",
+            str(paths / "published"),
+            "--output",
+            str(output),
+            "--n-bootstrap",
+            "10",
+            "--check",
+        ]
+    )
+
+
+def test_pipeline_cli(tmp_path, monkeypatch):
+    paths = _write_cli_fixture(tmp_path)
+    monkeypatch.setattr(
+        pipeline, "sentence_embedder", lambda: _pipeline_embedder
+    )
+    monkeypatch.setattr(pipeline, "load_nlp", lambda: _pipeline_nlp)
+    output = tmp_path / "output"
+
+    code = _run_pipeline_cli(paths, output)
+
+    assert code == 0
+    for name in (
+        "predicciones_test.csv",
+        "resultados_semillas.csv",
+        "resumen_sistemas.csv",
+        "intervalos_confianza.csv",
+        "diagnosticos.csv",
+        "trazabilidad.json",
+        "pipeline_report.md",
+    ):
+        assert (output / name).exists()
+    report = (output / "pipeline_report.md").read_text(encoding="utf-8")
+    assert "Deviations: 0" in report
+    assert "Privacy mentions: 0" in report
+
+
+def test_pipeline_cli_check_perturbed(tmp_path, monkeypatch):
+    paths = _write_cli_fixture(tmp_path)
+    pd.DataFrame(
+        [{"sistema": "M2", "semilla": 0, "F1_etiqueta": 0.0}]
+    ).to_csv(paths / "published" / "resultados_semillas.csv", index=False)
+    monkeypatch.setattr(
+        pipeline, "sentence_embedder", lambda: _pipeline_embedder
+    )
+    monkeypatch.setattr(pipeline, "load_nlp", lambda: _pipeline_nlp)
+
+    code = _run_pipeline_cli(paths, tmp_path / "output")
+
+    assert code == 1

@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
 
 from conectores.baselines import baseline_predictions
 from conectores.candidates import build_candidates
-from conectores.features import Embedder
-from conectores.metrics import replay
+from conectores.features import Embedder, sentence_embedder
+from conectores.metrics import _read_summary, replay
 from conectores.models import replay_m1, replay_m2
-from conectores.rules import NLP
+from conectores.rules import NLP, load_nlp
 
 PIPELINE_COLUMNS = [
     "comment_id",
@@ -122,6 +125,124 @@ def run_pipeline(
         deviations=replay_result.deviations,
         privacy_mentions=_privacy_mentions(predictions),
     )
+
+
+def _format_pipeline_report(result: PipelineResult) -> str:
+    lines = [
+        "# Pipeline report",
+        "",
+        f"- Predictions: {len(result.predictions)}",
+        f"- Systems rows: {len(result.systems)}",
+        f"- Summary rows: {len(result.summary)}",
+        f"- Interval rows: {len(result.intervals)}",
+        f"- Diagnostics rows: {len(result.diagnostics)}",
+        f"- Deviations: {len(result.deviations)}",
+        f"- Privacy mentions: {result.privacy_mentions}",
+        "",
+        "## Traceability",
+        "",
+    ]
+    for key, value in result.traceability.items():
+        lines.append(f"- {key}: {value}")
+    lines.extend(["", "## Deviations", ""])
+    if result.deviations:
+        lines.extend(f"- {deviation}" for deviation in result.deviations)
+    else:
+        lines.append("None.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def write_pipeline_outputs(
+    result: PipelineResult, output_dir: Path
+) -> None:
+    """Write the public tables and the report."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    result.predictions.to_csv(
+        output_dir / "predicciones_test.csv", index=False
+    )
+    result.systems.to_csv(
+        output_dir / "resultados_semillas.csv", index=False
+    )
+    result.summary.to_csv(
+        output_dir / "resumen_sistemas.csv", index=False
+    )
+    result.intervals.to_csv(
+        output_dir / "intervalos_confianza.csv", index=False
+    )
+    result.diagnostics.to_csv(
+        output_dir / "diagnosticos.csv", index=False
+    )
+    (output_dir / "trazabilidad.json").write_text(
+        json.dumps(dict(result.traceability), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (output_dir / "pipeline_report.md").write_text(
+        _format_pipeline_report(result), encoding="utf-8"
+    )
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the publication pipeline command line."""
+    parser = argparse.ArgumentParser(prog="python -m conectores.pipeline")
+    parser.add_argument("--reference", required=True)
+    parser.add_argument("--listing", required=True)
+    parser.add_argument("--csl", required=True)
+    parser.add_argument("--test-ids", required=True)
+    parser.add_argument("--hashes", required=True)
+    parser.add_argument("--published", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--n-bootstrap", type=int, default=1000)
+    parser.add_argument("--check", action="store_true")
+    args = parser.parse_args(argv)
+
+    reference = pd.read_csv(args.reference)
+    listing = pd.read_csv(args.listing)
+    csl = pd.read_csv(args.csl)
+    test_files = {}
+    for path in sorted(Path(args.test_ids).glob("test_semilla*.txt")):
+        seed = int(path.stem.split("_")[-1].replace("semilla", ""))
+        test_files[seed] = path.read_text(encoding="utf-8")
+    hashes = json.loads(Path(args.hashes).read_text(encoding="utf-8"))
+    published_dir = Path(args.published)
+    published = {
+        "predictions": pd.read_csv(
+            published_dir / "predicciones_test.csv"
+        ),
+        "systems": pd.read_csv(
+            published_dir / "resultados_semillas.csv"
+        ),
+        "summary": _read_summary(
+            published_dir / "resumen_sistemas.csv"
+        ),
+        "intervals": pd.read_csv(
+            published_dir / "intervalos_confianza.csv"
+        ),
+    }
+    result = run_pipeline(
+        reference,
+        listing,
+        csl,
+        test_files,
+        hashes,
+        published,
+        sentence_embedder(),
+        load_nlp(),
+        n_bootstrap=args.n_bootstrap,
+    )
+    write_pipeline_outputs(result, Path(args.output))
+    print(
+        f"Predictions: {len(result.predictions)} · "
+        f"Deviations: {len(result.deviations)} · "
+        f"Privacy mentions: {result.privacy_mentions}"
+    )
+    if args.check and (result.deviations or result.privacy_mentions):
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 
 
 MERGE_KEYS = ["semilla", "comment_id", "unidad", "inicio"]

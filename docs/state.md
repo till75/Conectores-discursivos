@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, the combined public frame is green and `run_pipeline` now composes the systems, summary, intervals, diagnostics and traceability. The output writer, CLI and cards remain.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, the combined public frame is green, `run_pipeline` composes the tables and the output writer/CLI are green. The cards, README and slow end-to-end comparison remain.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -24,10 +24,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S6 spec approved 2026-11-27: `docs/specs/0006-publication-pack.md`; seven-file pack, flat summary, Spanish static cards, extracted publicable directory and the `@USER` privacy rule are approved.
 - S6 combined public frame: `src/conectores/pipeline.py` and `tests/test_pipeline.py`; the helper merges B0/B1, M1 and M2 into the 15-column public frame, checks key/label/thread agreement and drops the M1 abstention internals.
 - S6 pipeline composition: `run_pipeline` builds candidates, B0/B1, M1 and M2, combines the frame, passes the rebuilt margins to `metrics.replay`, and returns the tables, traceability and privacy count. `replay` now accepts explicit `margins`.
+- S6 output writer and CLI: `write_pipeline_outputs` writes the seven public files and the report; `main` reads the inputs, loads the frozen models, runs the pipeline, writes the outputs and returns 1 on deviations or privacy mentions. The tests use synthetic files and monkeypatched models.
 
 ## Next
-1. Continue `/tdd` with the output writer and CLI.
-2. Then the privacy check integration, data card, model card and README.
+1. Continue `/tdd` with the published-prediction comparison and positive privacy check.
+2. Then the data card, model card, README and slow end-to-end test.
 3. Finish with the S6 diagnostic report and approval.
 
 ## Open questions
