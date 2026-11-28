@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) is implemented and the slow end-to-end test is green. The only remaining work is the S6 diagnostic report and approval.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) is implemented, the slow end-to-end test is green and the diagnostic report is written. S6 is ready for approval.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -29,10 +29,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S6 documentation: `docs/data-card.md`, `docs/model-card.md` and the README `## Reproducción` section; `tests/test_docs.py` checks the sections, counts and commands.
 - S6 slow end-to-end: `test_pipeline_end_to_end` runs the real CLI and writes the full pack with zero deviations and zero privacy mentions. The rebuilt frame is ordered by the frozen published keys before the bootstrap; that reproduces the 15 published intervals without reading published values.
 - S6 evidence: 139 default tests and 14 slow tests pass; `ruff check .` clean.
+- S6 diagnostic report written: `docs/results/0006-publication-pack-diagnostics.md`, including the pack shapes, split/hashes, metrics, abstention, traceability, intervals, privacy scan and the bootstrap-order fix.
 
 ## Next
-1. Write `docs/results/0006-publication-pack-diagnostics.md` with the end-to-end evidence.
-2. Commit the final S6 docs and stop for approval.
+1. Commit the final S6 docs.
+2. Stop for approval; do not push before it.
 
 ## Open questions
 - The `inicio_oracion` newline rule, the 20-candidate audit and the documentation privacy exceptions remain open.
