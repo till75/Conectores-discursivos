@@ -93,6 +93,44 @@ Los tests marcados `slow` no corren por defecto:
 .\.venv\Scripts\python.exe -m pytest -m slow
 ```
 
+## Reproducción
+
+Comprobación completa:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pytest -m slow
+.\.venv\Scripts\python.exe -m ruff check .
+```
+
+Paquete de publicación. El comando reconstruye las predicciones y las tablas
+desde las entradas congeladas, las compara con las tablas publicadas y escribe
+el paquete en `resultados_pipeline`:
+
+```powershell
+Expand-Archive doc\resultados_hito2.zip -DestinationPath .\resultados_publicados -Force
+.\.venv\Scripts\python.exe -m conectores.pipeline `
+  --reference doc\referencia_piloto.csv `
+  --listing doc\listado_fuentes2009.csv `
+  --csl doc\csl_excluidas.csv `
+  --test-ids .\resultados_publicados\resultados\publicable\test_congelado `
+  --hashes .\resultados_publicados\resultados\publicable\test_congelado\hashes.json `
+  --published .\resultados_publicados\resultados\publicable `
+  --output .\resultados_pipeline `
+  --check
+```
+
+`--check` devuelve 1 si hay desviaciones o menciones `@name`. El paquete
+contiene `predicciones_test.csv`, `resultados_semillas.csv`,
+`resumen_sistemas.csv`, `intervalos_confianza.csv`, `diagnosticos.csv`,
+`trazabilidad.json` y `pipeline_report.md`. No contiene texto de comentarios ni
+`author_hash`.
+
+Las fichas de datos y de modelo están en
+[`docs/data-card.md`](docs/data-card.md) y
+[`docs/model-card.md`](docs/model-card.md). La evidencia del piloto está en
+[`docs/results/`](docs/results/) y los contratos en [`docs/specs/`](docs/specs/).
+
 ## Flujo de trabajo
 
 Cada slice sigue el mismo camino y termina con un informe en `docs/results/`:

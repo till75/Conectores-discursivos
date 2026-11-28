@@ -1,7 +1,7 @@
 # State — 2026-11-27
 
 ## Where we are
-S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, the combined public frame, the pipeline composition, the writer/CLI and the prediction/privacy checks are green. The cards, README and slow end-to-end test remain.
+S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5 (M2 replay) is approved and pushed; `origin/main` is `0060709`. S6 (publication pack) has started: the spec is approved, the combined public frame, the pipeline composition, the writer/CLI, the prediction/privacy checks, the data card, the model card and the README reproduction section are green. The slow end-to-end test and the S6 diagnostic report remain.
 
 ## Done since last handoff
 - S4 M1 replay implemented and tested: `1a84fda`, `59a3c13`, `24a1b2c`, `7e6454d`, `01452be`, `cd614f6`.
@@ -26,10 +26,11 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - S6 pipeline composition: `run_pipeline` builds candidates, B0/B1, M1 and M2, combines the frame, passes the rebuilt margins to `metrics.replay`, and returns the tables, traceability and privacy count. `replay` now accepts explicit `margins`.
 - S6 output writer and CLI: `write_pipeline_outputs` writes the seven public files and the report; `main` reads the inputs, loads the frozen models, runs the pipeline, writes the outputs and returns 1 on deviations or privacy mentions. The tests use synthetic files and monkeypatched models.
 - S6 prediction and privacy checks: `_compare_predictions` names missing or changed core cells and probabilities; `_privacy_mentions` counts `@name` but allows `@USER`; `run_pipeline` adds a privacy deviation when the count is non-zero.
+- S6 documentation: `docs/data-card.md`, `docs/model-card.md` and the README `## Reproducción` section; `tests/test_docs.py` checks the sections, counts and commands.
 
 ## Next
-1. Continue `/tdd` with the data card, model card and README.
-2. Then the slow end-to-end test and the S6 diagnostic report.
+1. Continue `/tdd` with the slow end-to-end pipeline test.
+2. Then the S6 diagnostic report and final docs.
 3. Finish with approval.
 
 ## Open questions
@@ -40,8 +41,8 @@ S4 (M1 replay) is finished, approved, and pushed; `origin/main` is `f9ab832`. S5
 - Run Python as `.venv\Scripts\python.exe`; spaCy model is `es_core_news_sm`.
 - `doc/` is read-only evidence; its corpora are gitignored.
 - S5 prototype is `C:\Users\tills\AppData\Local\Temp\opencode\m2_probe_s5.py`; it is not in the repo.
-- No-abstention M2, `p_M2`, `origen_M2`, `revisar_categoria`, and traceability match; margins differ: prototype `0.20/0.15/0.15/0.15/0.20` vs published `0.15/0.10/0.20/0.10/0.20`; 27/439 `abstiene_M2` rows differ.
-- S5 margin cause: `GroupKFold` tie-break drift. The old sklearn used unstable `np.argsort` on equal-sized groups; 1.9.1 uses `kind="stable"`. `_group_kfold_splits` reproduces the old behaviour. Do not replace it with `GroupKFold` without rechecking the published M2 margins.
+- M2 margins match `0.15/0.10/0.20/0.10/0.20`; no-abstention M2, `p_M2`, `origen_M2`, `revisar_categoria` and traceability match, and `margin_deviations` is empty.
+- Margin cause: `GroupKFold` tie-break drift. The old sklearn used unstable `np.argsort` on equal-sized groups; 1.9.1 uses `kind="stable"`. `_group_kfold_splits` reproduces the old behaviour. Do not replace it with `GroupKFold` without rechecking the published M2 margins.
 - S4 evidence: `pytest -q` 79 passed, 10 deselected; `pytest -m slow` 10 passed; `ruff check .` clean.
 
 ## Not in an ADR
